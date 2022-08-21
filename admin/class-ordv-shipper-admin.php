@@ -1,5 +1,8 @@
 <?php
 
+use Carbon_Fields\Container;
+use Carbon_Fields\Field;
+
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -55,49 +58,47 @@ class Ordv_Shipper_Admin {
 	}
 
 	/**
-	 * Register the stylesheets for the admin area.
-	 *
-	 * @since    1.0.0
+	 * Load carbon field library
+	 * Hooked via action after_setup_theme, priority 10
+	 * @since 	1.0.0
+	 * @return 	void
 	 */
-	public function enqueue_styles() {
+	public function load_carbon_fields() {
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Ordv_Shipper_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Ordv_Shipper_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ordv-shipper-admin.css', array(), $this->version, 'all' );
+		\Carbon_Fields\Carbon_Fields::boot();
 
 	}
 
 	/**
-	 * Register the JavaScript for the admin area.
-	 *
-	 * @since    1.0.0
+	 * Get attribute term options
+	 * @since 	1.0.0
+	 * @return 	array
 	 */
-	public function enqueue_scripts() {
+	public function get_location_term_options() {
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Ordv_Shipper_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Ordv_Shipper_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
+		$options = array();
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ordv-shipper-admin.js', array( 'jquery' ), $this->version, false );
+		foreach( wc_get_attribute_taxonomies() as $id => $taxo ) :
+			$options[$taxo->attribute_label] = $taxo->attribute_label;
+		endforeach;
 
+		return $options;
 	}
 
+	/**
+	 * Add plugin options
+	 * Hooked via action carbon_fields_register_fields, priority 10
+	 * @since 	1.0.0
+	 * @return 	void
+	 */
+	public function add_plugin_options() {
+
+		Container::make( "theme_options", __("Shipper.id", "ordv-shipper"))
+			->add_fields([
+				Field::make( "select", "shipper_location_term", __("Produk Attribute", "ordv-shipper"))
+					->add_options(array($this, "get_location_term_options"))
+					->set_help_text( __("Select product attribute that defines location", "ordv-shipper"))
+			]);
+
+	}
 }

@@ -15,7 +15,7 @@
  * @wordpress-plugin
  * Plugin Name:       OrangerDev - Shipper.id
  * Plugin URI:        https://ridwan-arifandi.com
- * Description:       Shipper integration with WooCommerce.
+ * Description:       Shipper.id integration with WooCommerce.
  * Version:           1.0.0
  * Author:            Ridwan Arifandi
  * Author URI:        https://ridwan-arifandi.com
@@ -64,6 +64,8 @@ register_deactivation_hook( __FILE__, 'deactivate_ordv_shipper' );
  */
 require plugin_dir_path( __FILE__ ) . 'includes/class-ordv-shipper.php';
 
+require plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
+
 /**
  * Begins execution of the plugin.
  *
@@ -79,4 +81,35 @@ function run_ordv_shipper() {
 	$plugin->run();
 
 }
+
+if(!function_exists('__debug')) :
+function __debug()
+{
+	$bt     = debug_backtrace();
+	$caller = array_shift($bt);
+	$args   = [
+		"file"  => $caller["file"],
+		"line"  => $caller["line"],
+		"args"  => func_get_args()
+	];
+
+	do_action('qm/info', $args);
+}
+endif;
+
+if(!function_exists('__print_debug')) :
+function __print_debug()
+{
+	$bt     = debug_backtrace();
+	$caller = array_shift($bt);
+	$args   = [
+		"file"  => $caller["file"],
+		"line"  => $caller["line"],
+		"args"  => func_get_args()
+	];
+
+	?><pre><?php print_r($args); ?></pre><?php
+}
+endif;
+
 run_ordv_shipper();
