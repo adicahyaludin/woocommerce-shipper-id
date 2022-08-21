@@ -54,4 +54,35 @@ class Ordv_Shipper_Public {
 
 	}
 
+	/**
+	 * Check cart, remove any items in if not related to current item location
+	 * Hooked via action woocommerce_add_to_cart, priority 1
+	 * @since 	1.0.0
+	 * @param  	string 		$cart_item_key
+	 * @param  	integer 	$product_id
+	 * @param  	integer 	$quantity
+	 * @param  	integer 	$variation_id
+	 * @param  	[type] 		$variation
+	 * @param  	array 		$cart_item_data
+	 * @return 	void
+	 */
+	public function check_cart( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
+
+		if( 0 !== absint($variation_id) ) :
+			$term = carbon_get_theme_option("shipper_location_term");
+			$location = wc_get_product( $variation_id )->get_attribute( "pa_" . $term );
+
+			foreach( WC()->cart->get_cart() as $cart_item ) :
+				if(
+					array_key_exists("variation", $cart_item) &&
+					array_key_exists("attribute_pa_" . $term, $cart_item["variation"]) &&
+					strtoupper(sanitize_url($location)) !== strtoupper(sanitize_url($cart_item["variation"]["attribute_pa_" . $term]))
+				) :
+					WC()->cart->remove_cart_item( $cart_item["key"] );
+				endif;
+			endforeach;
+
+		endif;
+	}
+
 }

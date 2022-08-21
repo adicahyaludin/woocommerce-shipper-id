@@ -79,7 +79,7 @@ class Ordv_Shipper_Admin {
 		$options = array();
 
 		foreach( wc_get_attribute_taxonomies() as $id => $taxo ) :
-			$options[$taxo->attribute_label] = $taxo->attribute_label;
+			$options[$taxo->attribute_name] = $taxo->attribute_label;
 		endforeach;
 
 		return $options;

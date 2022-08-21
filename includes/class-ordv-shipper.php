@@ -170,6 +170,8 @@ class Ordv_Shipper {
 
 		$plugin_public = new Ordv_Shipper_Public( $this->get_plugin_name(), $this->get_version() );
 
+		$this->loader->add_action( "woocommerce_add_to_cart",	$plugin_public, "check_cart", 1, 6);
+
 	}
 
 	/**
