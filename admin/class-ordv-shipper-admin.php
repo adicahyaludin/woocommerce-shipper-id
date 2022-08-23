@@ -95,10 +95,48 @@ class Ordv_Shipper_Admin {
 
 		Container::make( "theme_options", __("Shipper.id", "ordv-shipper"))
 			->add_fields([
-				Field::make( "select", "shipper_location_term", __("Produk Attribute", "ordv-shipper"))
+				Field::make( "checkbox", "shipper_demo", __("Demo Site", "ordv-shipper"))
+					->set_help_text( __("If activated, it will use static cost field, not from shipper.id", "ordv-shipper")),
+
+				Field::make( "select",	 "shipper_location_term", __("Produk Attribute", "ordv-shipper"))
 					->add_options(array($this, "get_location_term_options"))
 					->set_help_text( __("Select product attribute that defines location", "ordv-shipper"))
 			]);
 
+	}
+
+	/**
+	 * Add location options based on product attribute selected on plugin options
+	 * Hooekd via action carbon_fields_register_fields, priority 10
+	 * @since 	1.0.0
+	 * @return 	void
+	 */
+	public function add_location_options() {
+
+		Container::make( "term_meta", __("Location Setup", "ordv-shipper"))
+			->where( "term_taxonomy", "=", "pa_" . carbon_get_theme_option("shipper_location_term") )
+			->add_fields([
+				Field::make( "text", "shipper_courier_cost", __("Courier Cost", "ordv-shipper"))
+					->set_attribute( "type", "number")
+					->set_default_value(0)
+					->set_help_text( __("Only used if demo site is activated in plugin options", "ordv-shipper"))
+			]);
+
+	}
+
+	/**
+	 * Add custom shipping method
+	 * Hooked via filter woocommerce_shipping_methods
+	 * @since 	1.0.0
+	 * @param  	array 	$methods
+	 * @return 	array
+	 */
+	public function modify_shipping_methods( $methods ) {
+
+		require_once( plugin_dir_path( dirname( __FILE__ )) . "includes/class-ordv-shipping-method.php");
+
+		$methods["ordv-shipper"] = "Ordv_Shipper_Shipping_Method";
+
+		return $methods;
 	}
 }

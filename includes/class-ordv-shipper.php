@@ -154,8 +154,10 @@ class Ordv_Shipper {
 
 		$plugin_admin = new Ordv_Shipper_Admin( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action( "after_setup_theme",					$plugin_admin, "load_carbon_fields",	10);
-		$this->loader->add_action( "carbon_fields_register_fields",		$plugin_admin, "add_plugin_options",	10);
+		$this->loader->add_action( "after_setup_theme",					$plugin_admin, "load_carbon_fields",		10);
+		$this->loader->add_action( "carbon_fields_register_fields",		$plugin_admin, "add_plugin_options",		10);
+		$this->loader->add_action( "carbon_fields_register_fields",		$plugin_admin, "add_location_options",		10);
+		$this->loader->add_filter( "woocommerce_shipping_methods",		$plugin_admin, "modify_shipping_methods",	10);
 
 	}
 
@@ -170,7 +172,7 @@ class Ordv_Shipper {
 
 		$plugin_public = new Ordv_Shipper_Public( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action( "woocommerce_add_to_cart",	$plugin_public, "check_cart", 1, 6);
+		$this->loader->add_action( "woocommerce_add_to_cart",		$plugin_public, "check_cart", 1, 6);
 
 	}
 
