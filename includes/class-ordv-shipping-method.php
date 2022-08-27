@@ -22,23 +22,7 @@ class Ordv_Shipper_Shipping_Method extends \WC_Shipping_Method {
             "instance-settings-modal"
         );
 
-        $this->instance_form_field = [
-            'enabled' => array(
-                'title'         => __( 'Enable', 'ordv-shipper' ),
-                'type'          => 'checkbox',
-                'description'   => __( 'Enable this shipping.', 'ordv-shipper' ),
-                'default'       => 'yes'
-            ),
-
-            'title'     => array(
-                'title'         => __( 'Title', 'ordv-shipper' ),
-                'type'          => 'text',
-                'description'   => __( 'Title to be display on site', 'ordv-shipper' ),
-                'default'       => __( 'Shipper.id Method', 'ordv-shipper' )
-            ),
-        ];
-
-        add_action( "woocommerce_update_options_shipping_" . $this->id, array( $this, 'process_admin_options' ) );
+        $this->init();
     }
 
     /**
@@ -80,6 +64,40 @@ class Ordv_Shipper_Shipping_Method extends \WC_Shipping_Method {
             "cost"  => $cost
         ));
     }
+
+    private function init() {
+		$this->init_form_fields();
+	}
+
+	public function init_form_fields() {
+		$this->instance_form_fields = array(
+			'title'          => array(
+				'title'       => __( 'Title', 'ordv-shipper' ),
+				'type'        => 'text',
+				'description' => '',
+				'default'     => $this->method_title,
+			),
+			'logistic'       => array(
+				'type' => 'logistic',
+			),
+		);
+	}
+
+    public function generate_logistic_html() {
+
+		ob_start();
+        ?>
+        <tr valign="top" id="logistic_options">
+            <th scope="row" class="titledesc"><?php _e( 'Logistics', 'ordv-shipper' ); ?></th>
+            <td class="forminp">
+                Empty Data
+            </td>
+        </tr>
+        <?php 
+		return ob_get_clean();
+
+    }
+
 }
 
 add_action( "woocommerce_shipping_init", "Ordv_Shipper_Shipping_Method");
