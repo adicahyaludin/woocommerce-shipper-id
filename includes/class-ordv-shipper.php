@@ -115,6 +115,7 @@ class Ordv_Shipper {
 		 * Functions
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'functions/logistic.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'functions/location.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
@@ -164,6 +165,9 @@ class Ordv_Shipper {
 		$this->loader->add_action( "carbon_fields_register_fields",		$plugin_admin, "add_location_options",		10);
 		$this->loader->add_filter( "woocommerce_shipping_methods",		$plugin_admin, "modify_shipping_methods",	10);
 		$this->loader->add_action( "admin_enqueue_scripts",				$plugin_admin, "enqueue_styles",		10);
+		$this->loader->add_action( "admin_enqueue_scripts",				$plugin_admin, "enqueue_scripts",		10);
+		$this->loader->add_action( "wp_ajax_get-locations",				$plugin_admin, "get_locations_by_ajax",		10);
+		$this->loader->add_action( "carbon_fields_term_meta_container_saved", $plugin_admin, "save_custom_term_meta_area",		10);		
 
 	}
 
