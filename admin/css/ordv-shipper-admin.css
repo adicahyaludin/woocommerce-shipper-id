@@ -2,3 +2,14 @@
  * All of the CSS for your admin-specific functionality should be
  * included in this file.
  */
+
+.logistic-options {
+    border-collapse: collapse;
+}
+.logistic-options .logistic-sort {
+    cursor: move;
+    color: #999;
+}
+.logistic-options .logistic-sort:hover {
+    color: #333;
+}

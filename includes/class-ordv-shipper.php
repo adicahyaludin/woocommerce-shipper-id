@@ -112,6 +112,11 @@ class Ordv_Shipper {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-ordv-shipper-i18n.php';
 
 		/**
+		 * Functions
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'functions/logistic.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-ordv-shipper-admin.php';
@@ -160,6 +165,7 @@ class Ordv_Shipper {
 		$this->loader->add_action( "carbon_fields_register_fields",		$plugin_admin, "add_plugin_options",		10);
 		$this->loader->add_action( "carbon_fields_register_fields",		$plugin_admin, "add_location_options",		10);
 		$this->loader->add_filter( "woocommerce_shipping_methods",		$plugin_admin, "modify_shipping_methods",	10);
+		$this->loader->add_action( "admin_enqueue_scripts",				$plugin_admin, "enqueue_styles",		10);
 
 	}
 
