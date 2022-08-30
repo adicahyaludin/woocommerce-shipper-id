@@ -58,24 +58,6 @@ class Ordv_Shipper_Admin {
 	}
 
 	/**
-	 * Enqueue scripts
-	 * Hooked via action admin_enqueue_scripts, priority 10
-	 * @since 	1.0.0
-	 * @return 	void
-	 */
-	public function enqueue_scripts() {
-
-		$screen = get_current_screen();
-
-		if ( $screen->id === 'woocommerce_page_wc-settings' ) :
-
-			// wp_enqueue_script( $this->plugin_name, ORDV_SHIPPER_URI.'admin/js/ordv-shipper-admin.js', ['jquery','jquery-ui-core','jquery-ui-sortable'], $this->version, true );
-
-		endif;
-
-	}
-
-	/**
 	 * Enqueue styles
 	 * Hooked via action admin_enqueue_scripts, priority 10
 	 * @since 	1.0.0
