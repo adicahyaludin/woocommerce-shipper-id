@@ -100,7 +100,10 @@ class Ordv_Shipper_Admin {
 
 				Field::make( "select",	 "shipper_location_term", __("Produk Attribute", "ordv-shipper"))
 					->add_options(array($this, "get_location_term_options"))
-					->set_help_text( __("Select product attribute that defines location", "ordv-shipper"))
+					->set_help_text( __("Select product attribute that defines location", "ordv-shipper")),
+
+				Field::make( "text", "shipper_api_key", __("API Key", "ordv-shipper"))
+					->set_default_value( 'l13MjiFynGWgWeT8ACZuDeG8SxqCeoG2eOJs6TF0YUTy5cs4PIn6CisaRqVjnb59' ),
 			]);
 
 	}
