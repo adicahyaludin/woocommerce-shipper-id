@@ -49,61 +49,67 @@ class Ordv_Shipper_Checkout {
 	 */
 	public function __construct( $plugin_name, $version ) {
 
-		$this->plugin_name = $plugin_name;
-		$this->version = $version;
+		$this->plugin_name          = $plugin_name;
+		$this->version              = $version;
+        $this->endpoint_province   = '/v3/location/country/'.COUNTRY_ID_NUM.'/provinces';
 
 	}
 
-	// /**
-	//  * Check cart, remove any items in if not related to current item location
-	//  * Hooked via action woocommerce_add_to_cart, priority 1
-	//  * @since 	1.0.0
-	//  * @param  	string 		$cart_item_key
-	//  * @param  	integer 	$product_id
-	//  * @param  	integer 	$quantity
-	//  * @param  	integer 	$variation_id
-	//  * @param  	[type] 		$variation
-	//  * @param  	array 		$cart_item_data
-	//  * @return 	void
-	//  */
-	// public function check_cart( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
+    public function change_province_name( $states ){
+        $states['ID']['AC'] = 'Aceh';
+        $states['ID']['YO'] = 'DI Yogyakarta';
+        
+        return $states;
+        
+    }
 
-	// 	if( 0 !== absint($variation_id) ) :
-	// 		$term = carbon_get_theme_option("shipper_location_term");
-	// 		$location = wc_get_product( $variation_id )->get_attribute( "pa_" . $term );
-
-	// 		foreach( WC()->cart->get_cart() as $cart_item ) :
-	// 			if(
-	// 				array_key_exists("variation", $cart_item) &&
-	// 				array_key_exists("attribute_pa_" . $term, $cart_item["variation"]) &&
-	// 				strtoupper(sanitize_url($location)) !== strtoupper(sanitize_url($cart_item["variation"]["attribute_pa_" . $term]))
-	// 			) :
-	// 				WC()->cart->remove_cart_item( $cart_item["key"] );
-	// 			endif;
-	// 		endforeach;
-
-	// 	endif;
-	// }
+	
 
     public function show_all_fields( $fields ){
-        
+    
+        $api_url_province = API_URL.''.$this->endpoint_province;
+
+        $args = array(
+        'headers' => array(
+            'Content-Type' => 'application/json',
+            'X-Api-Key' => API_KEY
+        ));
+
+        $request = wp_remote_get(
+            $api_url_province,
+            $args
+        );
+
+        $body = wp_remote_retrieve_body( $request );
+
+        $data_api       = json_decode($body);
+        $data_province  = $data_api->data;
+
+
+
+        $select_province = 'DI Yogyakarta';
+
+        $selected_province_data = [];
+
+        foreach ($data_province as $d) {
+            if( $select_province === $d->name ){
+                array_push( $selected_province_data, $d );
+            }
+        }
+
         echo '<pre>';
-        print_r( $fields ); 
+        print_r( $selected_province_data[0]->id );
         echo '</pre>';
-        
-       
+
     }
 
     public function remove_checkout_field( $fields ){
 
         
         unset($fields['billing']['billing_company']);           // remove company field
-        unset($fields['billing']['billing_country']);           // remove country field
         unset($fields['billing']['billing_address_1']);         // remove billing address 1 field
         unset($fields['billing']['billing_address_2']);         // remove billing address 2 field
         unset($fields['billing']['billing_city']);              // remove billing city field
-
-        $fields['billing']['billing_state']['priority'] = 61; // re-order province field
         
         // return field
         return $fields;
@@ -131,7 +137,7 @@ class Ordv_Shipper_Checkout {
             'options'   => array(
                             'opt_1' => '',
                            ),
-            'priority'  => 62
+            'priority'  => 82
          );
 
          $fields['billing']['ordv-kecamatan'] = array(
@@ -144,7 +150,7 @@ class Ordv_Shipper_Checkout {
             'options'   => array(
                 'opt_1' => '',
             ),
-            'priority'  => 64
+            'priority'  => 83
          );
 
          $fields['billing']['ordv-keldesa'] = array(
@@ -157,11 +163,89 @@ class Ordv_Shipper_Checkout {
             'options'   => array(
                 'opt_1' => '',
             ),
-            'priority'  => 66
+            'priority'  => 84
          );
          
     
          return $fields;
     }
+
+    public function load_checkout_scripts(){
+
+        $style = '#billing_country_field, #shipping_country_field { display: none; }';
+        echo '<style>'.$style.'</style>'."\n";
+
+        if ( is_checkout() ) {
+            wp_enqueue_script( 'checkout-script', plugin_dir_url( __DIR__ ). 'public/js/ordv-shipper-checkout.js', array( 'jquery' ), ORDV_SHIPPER_VERSION, true );
+            
+            $settings = array(
+                'ajax_url'  => admin_url( 'admin-ajax.php' ),
+                'city'      => [
+                    'action'    => 'get_data_cities',
+                    'nonce'     => wp_create_nonce('ajax-nonce')
+                ],
+                'kec'       => [
+                    'action'    => 'get_data_kec',
+                    'nonce'     => wp_create_nonce( 'ajax-nonce' )
+                ],
+                'keldes'    => [
+                    'action'    => 'get_data_keldes',
+                    'nonce'     => wp_create_nonce( 'ajax-nonce' )
+                ]            
+
+            );
+
+            wp_localize_script( 'checkout-script', 'checkout_ajax', $settings);
+        }        
+    }
+
+    public function get_data_cities(){
+
+        // Check for nonce security      
+        if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
+            die( 'Close The Door!');
+        }
+
+        $country_id     = $_POST['c'];
+        $province_id    = $_POST['s'];
+
+        $endpoint_province = $this->endpoint_province;
+
+        $province_name      = get_province_name( $country_id, $province_id );
+        $api_province_id    = get_api_province_id( $province_name, $endpoint_province );        
+        $get_data_cities    = get_list_city( $api_province_id );
+        
+        echo json_encode( $get_data_cities );
+        wp_die();
+
+    }
+
+    public function get_data_kec(){
+
+        if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
+            die( 'Close The Door!');
+        }
+
+        $api_city_id    = $_POST['k'];
+        $get_data_kec   = get_list_kec( $api_city_id );
+
+        echo json_encode( $get_data_kec );
+        wp_die();
+    }
+
+    public function get_data_keldes(){
+
+        if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
+            die( 'Close The Door!');
+        }
+
+        $api_kec_id    = $_POST['d'];
+        $get_data_keldesa = get_list_keldesa( $api_kec_id );
+
+        echo json_encode( $get_data_keldesa ); 
+        wp_die();
+
+    }
+
 
 }

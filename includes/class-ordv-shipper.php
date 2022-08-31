@@ -112,6 +112,11 @@ class Ordv_Shipper {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-ordv-shipper-i18n.php';
 
 		/**
+		 * The files responsible for defining all functions that will work as helper
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) .  'functions/function-ordv-helper.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-ordv-shipper-admin.php';
@@ -178,11 +183,21 @@ class Ordv_Shipper {
 
 		$plugin_checkout = new Ordv_Shipper_Checkout( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_filter( 'woocommerce_checkout_fields' , $plugin_checkout, 'remove_checkout_field' );
+		$this->loader->add_filter( 'woocommerce_checkout_fields',	$plugin_checkout, 'remove_checkout_field' );
+		$this->loader->add_filter( 'woocommerce_checkout_fields',	$plugin_checkout, 'add_checkout_fields' );
+		$this->loader->add_filter( 'woocommerce_states',			$plugin_checkout, 'change_province_name' );
+		//$this->loader->add_action( 'woocommerce_checkout_fields',	$plugin_checkout, 'show_all_fields' );
+		$this->loader->add_action( 'woocommerce_checkout_billing',	$plugin_checkout, 'load_checkout_scripts' );
+		
+		$this->loader->add_action( 'wp_ajax_nopriv_get_data_cities',		$plugin_checkout, 'get_data_cities' );
+		$this->loader->add_action( 'wp_ajax_get_data_cities', 				$plugin_checkout, 'get_data_cities' );
 
-		$this->loader->add_filter( 'woocommerce_checkout_fields' , $plugin_checkout, 'add_checkout_fields' );
+		$this->loader->add_action( 'wp_ajax_nopriv_get_data_kec',			$plugin_checkout, 'get_data_kec' );
+		$this->loader->add_action( 'wp_ajax_get_data_kec', 					$plugin_checkout, 'get_data_kec' );
 
-		//$this->loader->add_action( 'woocommerce_checkout_fields' , $plugin_checkout, 'show_all_fields' );
+		$this->loader->add_action( 'wp_ajax_nopriv_get_data_keldes',		$plugin_checkout, 'get_data_keldes' );
+		$this->loader->add_action( 'wp_ajax_get_data_keldes', 				$plugin_checkout, 'get_data_keldes' );
+
 
 
 	}

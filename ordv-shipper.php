@@ -36,6 +36,9 @@ if ( ! defined( 'WPINC' ) ) {
  * Rename this for your plugin and update it as you release new versions.
  */
 define( 'ORDV_SHIPPER_VERSION', '1.0.0' );
+define( 'API_URL', 'https://merchant-api-sandbox.shipper.id' );
+define( 'API_KEY', 'l13MjiFynGWgWeT8ACZuDeG8SxqCeoG2eOJs6TF0YUTy5cs4PIn6CisaRqVjnb59' );
+define( 'COUNTRY_ID_NUM', '228' );
 
 /**
  * The code that runs during plugin activation.
