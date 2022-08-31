@@ -40,6 +40,9 @@ define( 'API_URL', 'https://merchant-api-sandbox.shipper.id' );
 define( 'API_KEY', 'l13MjiFynGWgWeT8ACZuDeG8SxqCeoG2eOJs6TF0YUTy5cs4PIn6CisaRqVjnb59' );
 define( 'COUNTRY_ID_NUM', '228' );
 
+define( 'ORDV_SHIPPER_PATH', plugin_dir_path( __FILE__ ) );
+define( 'ORDV_SHIPPER_URI', plugin_dir_url( __FILE__ ) );
+
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-ordv-shipper-activator.php

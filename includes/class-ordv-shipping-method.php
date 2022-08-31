@@ -85,18 +85,55 @@ class Ordv_Shipper_Shipping_Method extends \WC_Shipping_Method {
 
     public function generate_logistic_html() {
 
+        $logistics_results  = ordv_shipper_get_logistics(); 
+        $logistics_option   = $this->get_option( 'logistic', array() );
+        $logistics_order    = array_map('intval',$logistics_option['order']);
+        $logistics_enabled  = array_map('intval',$logistics_option['enabled']);
+
+        $logistics = [];
+        if ( $logistics_order ) :
+            foreach ( $logistics_order as $key => $value ) :
+                if ( isset( $logistics_results[$value] ) ) :
+                    $logistics[$value] = $logistics_results[$value];
+                endif;
+            endforeach;
+            foreach ( $logistics_results as $key => $value) :
+                if ( !isset( $logistics[$key] ) ) :
+                    $logistics[$key] = $value;
+                endif;
+            endforeach;
+        else:
+            $logistics = $logistics_results;
+        endif;
+
 		ob_start();
-        ?>
-        <tr valign="top" id="logistic_options">
-            <th scope="row" class="titledesc"><?php _e( 'Logistics', 'ordv-shipper' ); ?></th>
-            <td class="forminp">
-                Empty Data
-            </td>
-        </tr>
-        <?php 
+        include ORDV_SHIPPER_PATH.'admin/partials/logistic-options.php';
 		return ob_get_clean();
 
     }
+
+    public function validate_logistic_field( $key ) {
+
+		$logistics = [
+            'order'     => [],
+            'enabled'   => []
+        ];
+
+        if ( isset( $_POST['data']['logistics_order'] ) ) :
+
+            $logistics['order'] = $_POST['data']['logistics_order'];
+
+        endif;
+	
+        if ( isset( $_POST['data']['logistics_enabled'] ) ) :
+
+            $logistics['enabled'] = $_POST['data']['logistics_enabled'];
+
+        endif;
+
+		return $logistics;
+
+	}
 
 }
 
