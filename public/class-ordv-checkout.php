@@ -191,6 +191,10 @@ class Ordv_Shipper_Checkout {
                 'keldes'    => [
                     'action'    => 'get_data_keldes',
                     'nonce'     => wp_create_nonce( 'ajax-nonce' )
+                ],
+                'area'      => [
+                    'action'    => 'get_data_kurir',
+                    'nonce'     => wp_create_nonce( 'ajax-nonce' )
                 ]            
 
             );
@@ -247,9 +251,82 @@ class Ordv_Shipper_Checkout {
 
     }
 
+    public function get_data_kurir(){
+
+        if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
+            die( 'Close The Door!');
+        }
+
+        $api_o_area_id  = 4711; // ganti dengan origin area id dari setting mas Adi
+        $api_d_area_id  = $_POST['a'];
+
+        $data_packages  = get_packages_data();
+
+        $total_weight   = $data_packages['weight'];
+        $total_height   = $data_packages['height'];
+        $total_width    = $data_packages['width'];
+        $total_length   = $data_packages['length'];
+        $subtotal       = $data_packages['subtotal'];
+
+        $endpoint_kurir = '/v3/pricing/domestic';
+        $endpoint_url   = API_URL.''.$endpoint_kurir;
+
+        $body = array(
+            'cod' => false,
+            'destination' => array(
+                'area_id' => 25946,
+            ),
+            'origin' => array(
+                'area_id' => 4711
+            ),
+            'height' => 10,
+            'length' => 10,
+            'weight' => 1,
+            'width' => 10,
+            'item_value' => 15
+        );
+
+        $body = wp_json_encode( $body );
+
+        $args = array(
+            'headers' => array(
+                'Content-Type' => 'application/json',
+                'X-Api-Key' => API_KEY
+            ),
+            'body' => $body
+            
+        );
+
+
+        $request = wp_remote_post(
+            $endpoint_url,
+            $args
+        );
+
+        $body               = wp_remote_retrieve_body( $request );
+        $data_api           = json_decode($body);
+        $data_list_kurir    = $data_api->data->pricings;
+
+        // ob_start();
+        // require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/partials/list-opsi-kurir.php';
+        // $result = ob_get_contents();
+        // ob_end_clean();
+
+        ob_start();
+        include plugin_dir_path( dirname( __FILE__ ) ) . 'public/partials/list-opsi-kurir.php';
+        $result = ob_get_clean();
+
+
+        //echo json_encode( $result );
+        wp_send_json( $result );
+        wp_die();
+
+    }
+
     public function custom_shipping_package_name( $name ){
-        $name       = 'Pengiriman';
-        $packages    = get_packages_data();
+        
+        $name           = 'Pengiriman';
+        $packages       = get_packages_data();
 
         $total_weight   = $packages['weight'];
         $total_height   = $packages['height'];
@@ -262,6 +339,7 @@ class Ordv_Shipper_Checkout {
         $name       .= '<br/><small>ukuran '.$total_length.'x'.$total_width.'x'.$total_height.'cm</small>';
         
         return $name;
+        
     }
 
 

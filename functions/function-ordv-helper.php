@@ -131,6 +131,7 @@ function get_packages_data(){
         $item_length    = intval( $_product->get_length());
         $item_height    = intval( $_product->get_height());
         $item_width     = intval( $_product->get_width());
+        $cart_subtotal  = intval( WC()->cart->get_subtotal() );
 
         $item_data = array(
             'length'   => $item_length,
@@ -158,9 +159,10 @@ function get_packages_data(){
         $total_height += $p_height;
     }
 
-    $data['length'] = $total_length;
-    $data['width']  = max($list_width);
-    $data['height'] = $total_height;
+    $data['length']     = $total_length;
+    $data['width']      = max($list_width);
+    $data['height']     = $total_height;
+    $data['subtotal']   = $cart_subtotal;
 
 
     return $data;

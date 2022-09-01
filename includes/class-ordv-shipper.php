@@ -207,6 +207,11 @@ class Ordv_Shipper {
 		$this->loader->add_action( 'wp_ajax_nopriv_get_data_keldes',		$plugin_checkout, 'get_data_keldes' );
 		$this->loader->add_action( 'wp_ajax_get_data_keldes', 				$plugin_checkout, 'get_data_keldes' );
 
+		$this->loader->add_action( 'wp_ajax_nopriv_get_data_kurir',			$plugin_checkout, 'get_data_kurir' );
+		$this->loader->add_action( 'wp_ajax_get_data_kurir', 				$plugin_checkout, 'get_data_kurir' );
+
+		
+
 
 
 	}
