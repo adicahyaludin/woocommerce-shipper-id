@@ -80,9 +80,8 @@
 
 		var pc = $('#ordv-keldesa').find(':selected').attr('data-postcode');
 		$('#billing_postcode').val(pc);
-
 		
-
+		
 		$('#shipping_method').html('hello');
 
 	});

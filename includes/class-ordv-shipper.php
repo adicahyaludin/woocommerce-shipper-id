@@ -190,11 +190,13 @@ class Ordv_Shipper {
 
 		$plugin_checkout = new Ordv_Shipper_Checkout( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_filter( 'woocommerce_checkout_fields',	$plugin_checkout, 'remove_checkout_field' );
-		$this->loader->add_filter( 'woocommerce_checkout_fields',	$plugin_checkout, 'add_checkout_fields' );
-		$this->loader->add_filter( 'woocommerce_states',			$plugin_checkout, 'change_province_name' );
+		$this->loader->add_filter( 'woocommerce_checkout_fields',			$plugin_checkout, 'remove_checkout_field' );
+		$this->loader->add_filter( 'woocommerce_checkout_fields',			$plugin_checkout, 'add_checkout_fields' );
+		$this->loader->add_filter( 'woocommerce_states',					$plugin_checkout, 'change_province_name' );
+		$this->loader->add_filter( 'woocommerce_shipping_package_name',		$plugin_checkout, 'custom_shipping_package_name', 10, 3 );
+
 		//$this->loader->add_action( 'woocommerce_checkout_fields',	$plugin_checkout, 'show_all_fields' );
-		$this->loader->add_action( 'woocommerce_checkout_billing',	$plugin_checkout, 'load_checkout_scripts' );
+		$this->loader->add_action( 'woocommerce_checkout_billing',			$plugin_checkout, 'load_checkout_scripts' );
 		
 		$this->loader->add_action( 'wp_ajax_nopriv_get_data_cities',		$plugin_checkout, 'get_data_cities' );
 		$this->loader->add_action( 'wp_ajax_get_data_cities', 				$plugin_checkout, 'get_data_cities' );

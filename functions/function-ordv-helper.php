@@ -112,3 +112,56 @@ function get_list_keldesa( $api_kec_id ){
     return $data_api->data;
 
 }
+
+function get_packages_data(){
+    
+        
+    $data = array();
+
+    $total_weight = WC()->cart->get_cart_contents_weight();
+    $data['weight'] = $total_weight;
+    $i_data['item_data'] = array();
+
+    $items = WC()->cart->get_cart();    
+
+    //LOOP ALL THE PRODUCTS IN THE CART
+    foreach($items as $item => $values) { 
+        $_product =  wc_get_product( $values['data']->get_id());
+        
+        $item_length    = intval( $_product->get_length());
+        $item_height    = intval( $_product->get_height());
+        $item_width     = intval( $_product->get_width());
+
+        $item_data = array(
+            'length'   => $item_length,
+            'height'   => $item_height,
+            'width'    => $item_width
+        );
+
+        array_push($i_data['item_data'],  $item_data);
+
+    } 
+
+    $p_data         = $i_data['item_data'];
+    $total_length   = 0;
+    $total_height   = 0;
+
+    $list_width = array();
+
+    foreach ($p_data as $pd) {
+        $p_length = $pd['length'];
+        $p_height = $pd['height'];
+
+        $list_width[] = $pd['width'];
+
+        $total_length += $p_length;
+        $total_height += $p_height;
+    }
+
+    $data['length'] = $total_length;
+    $data['width']  = max($list_width);
+    $data['height'] = $total_height;
+
+
+    return $data;
+}

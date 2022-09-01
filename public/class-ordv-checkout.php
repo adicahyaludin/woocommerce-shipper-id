@@ -247,5 +247,22 @@ class Ordv_Shipper_Checkout {
 
     }
 
+    public function custom_shipping_package_name( $name ){
+        $name       = 'Pengiriman';
+        $packages    = get_packages_data();
+
+        $total_weight   = $packages['weight'];
+        $total_height   = $packages['height'];
+        $total_width    = $packages['width'];
+        $total_length   = $packages['length'];
+
+        $name       .= '<br/><small>dari </small>';
+        $name       .= '<br/><small>berat '.$total_weight.' '.get_option( 'woocommerce_weight_unit' );
+        $name       .= '</small>';
+        $name       .= '<br/><small>ukuran '.$total_length.'x'.$total_width.'x'.$total_height.'cm</small>';
+        
+        return $name;
+    }
+
 
 }
