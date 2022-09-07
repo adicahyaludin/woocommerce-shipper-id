@@ -39,6 +39,7 @@ class Ordv_Shipper_Shipping_Method extends \WC_Shipping_Method {
         $location_term = "pa_" . carbon_get_theme_option( "shipper_location_term" );
         $location_product_attribute = "attribute_" . $location_term;
 
+
         foreach( $package["contents"] as $hash => $item ) :
             if(
                 array_key_exists("variation", $item) &&
@@ -58,6 +59,7 @@ class Ordv_Shipper_Shipping_Method extends \WC_Shipping_Method {
             endif;
         endforeach;
 
+        
         $this->add_rate( array(
             "id"    => $this->id . $this->instance_id,
             "label" => $title,

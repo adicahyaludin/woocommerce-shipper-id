@@ -91,12 +91,45 @@
 			},
 			dataType: "json",
 			success: function (data) {
-				$('#shipping_method').html(data);
+				//$('body').trigger('update_checkout');
+				$('.woocommerce-shipping-totals > td').html(data);				
 			}
 		});
 		
 		
 
+	});
+
+	
+	$(document.body).on( "change", "input[name=shipping_method]", function(){
+		// request update_checkout to domain.com/checkout/?wc-ajax=update_order_review
+		
+		var a = $('input[name=shipping_method]:checked').val();
+		var b = $('input[name=shipping_method]:checked').attr('data-kurir-price');
+
+		$.ajax({
+			type: 'POST',
+			url: checkout_ajax.ajax_url,
+			data: {
+				'a' : a,
+				'b' : b,
+				'action' : checkout_ajax.shipping.action,
+				'nonce': checkout_ajax.shipping.nonce
+			},
+			async: false,
+			dataType: 'json',
+			success: function (data) {
+				// no data send
+
+				//console.log(data);
+				//var new_total	= '<span class="woocommerce-Price-currencySymbol">Rp</span> ';
+				//new_total += data;
+
+				//$('.order-total .woocommerce-Price-amount bdi').html(new_total);
+				//$('body').trigger('update_checkout');
+			}
+		});
+		
 	});
 
 	/**

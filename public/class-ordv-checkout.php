@@ -56,6 +56,7 @@ class Ordv_Shipper_Checkout {
 	}
 
     public function change_province_name( $states ){
+        
         $states['ID']['AC'] = 'Aceh';
         $states['ID']['YO'] = 'DI Yogyakarta';
         
@@ -195,8 +196,11 @@ class Ordv_Shipper_Checkout {
                 'area'      => [
                     'action'    => 'get_data_kurir',
                     'nonce'     => wp_create_nonce( 'ajax-nonce' )
-                ]            
-
+                ],
+                'shipping' => [
+                    'action'    => 'recalculate_shipping',
+                    'nonce'     => wp_create_nonce( 'ajax-nonce' )
+                ] 
             );
 
             wp_localize_script( 'checkout-script', 'checkout_ajax', $settings);
@@ -256,66 +260,15 @@ class Ordv_Shipper_Checkout {
         if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
             die( 'Close The Door!');
         }
-
-        $api_o_area_id  = 4711; // ganti dengan origin area id dari setting mas Adi
-        $api_d_area_id  = $_POST['a'];
-
+        
+        $api_d_area_id  = intval( $_POST['a'] );
         $data_packages  = get_packages_data();
 
-        $total_weight   = $data_packages['weight'];
-        $total_height   = $data_packages['height'];
-        $total_width    = $data_packages['width'];
-        $total_length   = $data_packages['length'];
-        $subtotal       = $data_packages['subtotal'];
-
-        $endpoint_kurir = '/v3/pricing/domestic';
-        $endpoint_url   = API_URL.''.$endpoint_kurir;
-
-        $body = array(
-            'cod' => false,
-            'destination' => array(
-                'area_id' => 25946,
-            ),
-            'origin' => array(
-                'area_id' => 4711
-            ),
-            'height' => 10,
-            'length' => 10,
-            'weight' => 1,
-            'width' => 10,
-            'item_value' => 15
-        );
-
-        $body = wp_json_encode( $body );
-
-        $args = array(
-            'headers' => array(
-                'Content-Type' => 'application/json',
-                'X-Api-Key' => API_KEY
-            ),
-            'body' => $body
-            
-        );
-
-
-        $request = wp_remote_post(
-            $endpoint_url,
-            $args
-        );
-
-        $body               = wp_remote_retrieve_body( $request );
-        $data_api           = json_decode($body);
-        $data_list_kurir    = $data_api->data->pricings;
-
-        // ob_start();
-        // require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/partials/list-opsi-kurir.php';
-        // $result = ob_get_contents();
-        // ob_end_clean();
+        $data_list_kurir = get_data_list_kurir( $api_d_area_id, $data_packages );
 
         ob_start();
         include plugin_dir_path( dirname( __FILE__ ) ) . 'public/partials/list-opsi-kurir.php';
         $result = ob_get_clean();
-
 
         //echo json_encode( $result );
         wp_send_json( $result );
@@ -332,15 +285,98 @@ class Ordv_Shipper_Checkout {
         $total_height   = $packages['height'];
         $total_width    = $packages['width'];
         $total_length   = $packages['length'];
+        $origin_text    = $packages['origin_text'];
 
-        $name       .= '<br/><small>dari </small>';
-        $name       .= '<br/><small>berat '.$total_weight.' '.get_option( 'woocommerce_weight_unit' );
+        $name       .= '<br/><small>dari '.$origin_text.'</small>';
+        $name       .= '<br/><small>berat '.$total_weight.' gr';
         $name       .= '</small>';
         $name       .= '<br/><small>ukuran '.$total_length.'x'.$total_width.'x'.$total_height.'cm</small>';
-        
+                
         return $name;
         
     }
 
+    public function update_order_review( $posted_data ){
+        
+        // Parsing posted data on checkout
+        $post = array();
+        $vars = explode('&', $posted_data);
+        foreach ($vars as $k => $value){
+            $v = explode('=', urldecode($value));
+            $post[$v[0]] = $v[1];
+        }
+
+        $packages = WC()->cart->get_shipping_packages();
+        foreach ($packages as $package_key => $package) {
+            $session_key = 'shipping_for_package_'.$package_key;
+            $stored_rates = WC()->session->__unset($session_key);
+        }       
+        
+    }
+
+
+    public function recalculate_shipping(){
+        
+        if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
+            die( 'Close The Door!');        
+        }
+
+        if( WC()->session->get( 'shipping_kurir') ){
+            WC()->session->__unset( 'shipping_kurir' );
+            WC()->session->__unset( 'shipping_price' );
+        }
+        
+        $shipping_method    = $_POST['a'];
+        $shipping_price     = intval($_POST['b']);
+
+        $bh_packages = WC()->cart->get_shipping_packages();
+
+        $prev_subtotal  = intval($bh_packages[0]['cart_subtotal']);
+        $new_subtotal   = ( $prev_subtotal + $shipping_price );
+
+        //Set session for add rates data
+        WC()->session->set( 'shipping_kurir' , $shipping_method );
+        WC()->session->set( 'shipping_price' , $shipping_price );
+        
+       
+        wp_send_json( $new_subtotal);
+        wp_die();
+
+
+    }
+
+
+    public function adjust_shipping_rate( $rates, $package) {     
+        
+        $cost   = 10000;
+        $label  = 'Happy shippping';
+
+        if( '' != WC()->session->get('shipping_kurir') ){
+            $label = WC()->session->get('shipping_kurir');
+        }
+
+        if( '' != WC()->session->get('shipping_price') ){
+            $cost = intval( WC()->session->get('shipping_price'));
+        }
+
+            
+            foreach ( $rates as $rate_key => $rate ) {           
+                if( $rate->method_id === 'ordv-shipper'){                    
+                    $rates[$rate_key]->label    = $label;
+                    $rates[$rate_key]->cost     = $cost;
+                }
+            }
+
+        return $rates;
+    }
+
+    
+    public function filter_cart_needs_shipping( $needs_shipping ) {
+        if ( is_cart() ) {
+            $needs_shipping = false;
+        }
+        return $needs_shipping;
+    }
+    
 
 }
