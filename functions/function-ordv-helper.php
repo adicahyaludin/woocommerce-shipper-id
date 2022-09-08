@@ -134,8 +134,11 @@ function get_packages_data(){
         $item_attribute = $_product->get_attribute( 'pa_lokasi' );
         $item_term      = get_term_by( 'name',  $item_attribute, 'pa_lokasi' );
 
-        $area_id    = get_term_meta( $item_term->term_taxonomy_id, '_origin_area_id', true);
-        $area_text  = get_term_meta( $item_term->term_taxonomy_id, '_origin_area_text', true);
+        $area_id        = get_term_meta( $item_term->term_taxonomy_id, '_origin_area_id', true);
+        $area_text      = get_term_meta( $item_term->term_taxonomy_id, '_origin_area_text', true);
+
+        $origin_lat     = get_term_meta( $item_term->term_taxonomy_id, '_shipper_courier_origin_lat', true);
+        $origin_lng     = get_term_meta( $item_term->term_taxonomy_id, '_shipper_courier_origin_lng', true);
 
         // $cost = carbon_get_term_meta( 32, "shipper_courier_origin_area_id");
         
@@ -145,7 +148,7 @@ function get_packages_data(){
         $cart_subtotal  = intval( WC()->cart->get_subtotal() );
         $origin_id	    = intval( $area_id );
         $origin_text    = strval( $area_text );
-
+       
         $item_data = array(
             'length'   => $item_length,
             'height'   => $item_height,
@@ -178,31 +181,46 @@ function get_packages_data(){
     $data['subtotal']       = $cart_subtotal;
     $data['origin_id']      = $origin_id;
     $data['origin_text']    = $origin_text;
+    $data['origin_lat']     = $origin_lat;
+    $data['origin_lng']     = $origin_lng;
 
 
     return $data;
 }
 
-function get_data_list_kurir( $api_d_area_id, $data_packages ){
+function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $delivery_id, $data_packages ){
     
     $total_weight   = ( $data_packages['weight'] / 1000 );
     $total_height   = $data_packages['height'];
     $total_width    = $data_packages['width'];
     $total_length   = $data_packages['length'];
     $subtotal       = $data_packages['subtotal'];
-    $origin_id      = $data_packages['origin_id'];
 
-    $endpoint_kurir = '/v3/pricing/domestic?limit=200';
+    $origin_id      = $data_packages['origin_id'];
+    $origin_lat     = $data_packages['origin_lat'];
+    $origin_lng     = $data_packages['origin_lng'];
+
+    $dest_area_lat  = $area_id_lat;
+    $dest_area_lng  = $area_id_lng;
+    
+    $delivery_opt   = $delivery_id;
+
+    $endpoint_kurir = '/v3/pricing/domestic/'.$delivery_opt.'?limit=500';
     $endpoint_url   = API_URL.''.$endpoint_kurir;  
-    $api_key = carbon_get_theme_option('shipper_api_key');      
+    $api_key = carbon_get_theme_option('shipper_api_key');  
+
 
     $body = array(
         'cod' => false,
         'destination' => array(
-            'area_id' => $api_d_area_id
+            'area_id' => $api_d_area_id,
+            'lat'     => $dest_area_lat,
+            'lng'     => $dest_area_lng
         ),
         'origin' => array(
-            'area_id' => $origin_id
+            'area_id' => $origin_id,
+            'lat'     => $origin_lat,
+            'lng'     => $origin_lng
         ),
         'height' => $total_height,
         'length' => $total_length,

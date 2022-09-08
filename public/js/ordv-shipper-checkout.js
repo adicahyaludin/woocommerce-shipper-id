@@ -2,6 +2,7 @@
 	'use strict';
 
 	$('#ordv-kotakab, #ordv-kecamatan, #ordv-keldesa').selectWoo().prop('disabled',true);
+	$('#billing_delivery_option_field input[type=radio]').prop("disabled",true);
 
     $(document.body).on("change", "#billing_state", function() {
         var c = $("#billing_country").val();
@@ -26,6 +27,14 @@
 		 
 				$('#ordv-kotakab').html(options);
 				$('#ordv-kotakab').selectWoo().prop('disabled',false);
+
+				$('#ordv-kecamatan, #ordv-keldesa').selectWoo().prop('disabled',true);
+				$('#ordv-kecamatan, #ordv-keldesa').html('');
+				$('#billing_delivery_option_field input[type=radio]').html('');
+				$('body').trigger('update_checkout');
+
+				$('#billing_delivery_option_field input[type=radio]').prop("disabled",true);
+
 			}
 		});
 
@@ -52,6 +61,13 @@
 		 
 				$('#ordv-kecamatan').html(options);
 				$('#ordv-kecamatan').selectWoo().prop('disabled',false);
+
+				$('#ordv-keldesa').selectWoo().prop('disabled',true);
+				$('#ordv-keldesa').html('');
+				$('#billing_delivery_option_field input[type=radio]').html('');
+				$('body').trigger('update_checkout');
+
+				$('#billing_delivery_option_field input[type=radio]').prop("disabled",true);
 			}
 		});
 		
@@ -72,19 +88,35 @@
 				var options = '';
 				options += '<option></option>';
 				$.each(data,function(i,o){
-					options += '<option value="'+o.id+'" data-label="'+o.name+'" data-postcode="'+o.postcode+'">'+o.name+'</option>';
+					options += '<option value="'+o.id+'" data-label="'+o.name+'" data-postcode="'+o.postcode+'" data-lat="'+o.lat+'" data-lng="'+o.lng+'">'+o.name+'</option>';
 				});
 		 
 				$('#ordv-keldesa').html( options );
 				$('#ordv-keldesa').selectWoo().prop('disabled',false);
+				$('#billing_delivery_option_field input[type=radio]').html('');
 				$('body').trigger('update_checkout');
+
+				$('#billing_delivery_option_field input[type=radio]').prop("disabled",true);
 			}
 		});
 	});
 
 	$(document.body).on( "change", "#ordv-keldesa", function(){
 
-		var a = $('#ordv-keldesa').val();
+		$('body').trigger('update_checkout');
+		$('#billing_delivery_option_field input[type=radio]').html('');	
+		$('#billing_delivery_option_field input[type=radio]').prop("disabled",false);
+
+	});
+
+	
+	$(document.body).on( "change", "input[type=radio][name=billing_delivery_option]", function(){
+		
+		var dlvr_id = $('input:radio[name=billing_delivery_option]:checked').val();
+
+		var a = $('#ordv-keldesa').find(':selected').val();
+		var a_lat = $('#ordv-keldesa').find(':selected').attr('data-lat');
+		var a_lng = $('#ordv-keldesa').find(':selected').attr('data-lng');
 
 		var pc = $('#ordv-keldesa').find(':selected').attr('data-postcode');
 		$('#billing_postcode').val(pc);
@@ -96,13 +128,15 @@
 
 		var city_label = dk+', '+kc+', '+kk;
 		$('#billing_city').val(city_label);
-
 		
 		$.ajax({
 			type: 'POST',
 			url: checkout_ajax.ajax_url,
 			data: {
 				'a' : a,
+				'a_lat' : a_lat,
+				'a_lng' : a_lng, 
+				'dlvr_id' : dlvr_id,
 				'action' : checkout_ajax.area.action,
 				'nonce': checkout_ajax.area.nonce
 			},

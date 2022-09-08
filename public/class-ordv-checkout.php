@@ -121,13 +121,29 @@ class Ordv_Shipper_Checkout {
             'priority'  => 84
         );
 
+        $fields['billing']['billing_delivery_option'] = array(
+            'type'      => 'radio',
+            'label'     => __('Delivery Options', 'woocommerce'),
+            'required'  => true,
+            'class'     => array('form-row-wide'),
+            'options'   => array(                 
+                'regular'   => 'regular', 
+                'express'   => 'express',
+                'trucking'  => 'trucking', 
+                'same-day'  => 'same day',
+                'instant'   => 'instant'
+            ),
+            'priority'  => 86
+        );
+
+
         $fields['billing']['billing_city'] = array(
             'type'      => 'hidden',
             'label'     => __('city', 'woocommerce'),
             'placeholder'   => _x('', 'woocommerce'),
             'required'  => true,
             'class'     => array('form-row-wide'),
-            'priority'  => 85
+            'priority'  => 86
         );
 
         $fields['billing']['billing_city']['label'] = false;
@@ -138,6 +154,9 @@ class Ordv_Shipper_Checkout {
     public function load_checkout_scripts(){
 
         $style = '#billing_country_field, #shipping_country_field{ display: none !important; }';
+        $style .= '#billing_delivery_option_field.radio {display: inline !important; margin-left: 5px;}';
+        $style .= '#billing_delivery_option_field input[type="radio"] { margin-left: 0px;}';
+        $style .= '#billing_delivery_option_field input[type="radio"] + label { display: inline-block; margin-right:15px; }';
         echo '<style>'.$style.'</style>'."\n";
 
         if ( is_checkout() ) {
@@ -185,6 +204,8 @@ class Ordv_Shipper_Checkout {
         $province_name      = get_province_name( $country_id, $province_id );
         $api_province_id    = get_api_province_id( $province_name, $endpoint_province );        
         $get_data_cities    = get_list_city( $api_province_id );
+
+        WC()->session->__unset( 'data_kurir');
         
         echo json_encode( $get_data_cities );
         wp_die();
@@ -200,6 +221,8 @@ class Ordv_Shipper_Checkout {
         $api_city_id    = $_POST['k'];
         $get_data_kec   = get_list_kec( $api_city_id );
 
+        WC()->session->__unset( 'data_kurir');
+
         echo json_encode( $get_data_kec );
         wp_die();
     }
@@ -213,6 +236,8 @@ class Ordv_Shipper_Checkout {
         $api_kec_id    = $_POST['d'];
         $get_data_keldesa = get_list_keldesa( $api_kec_id );
 
+        WC()->session->__unset( 'data_kurir');
+
         echo json_encode( $get_data_keldesa ); 
         wp_die();
 
@@ -225,9 +250,13 @@ class Ordv_Shipper_Checkout {
         }
         
         $api_d_area_id  = intval( $_POST['a'] );
+        $area_id_lat    = $_POST['a_lat'];
+        $area_id_lng    = $_POST['a_lng'];
+        $delivery_id    = $_POST['dlvr_id'];
+
         $data_packages  = get_packages_data();
 
-        $data_list_kurir = get_data_list_kurir( $api_d_area_id, $data_packages );
+        $data_list_kurir = get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $delivery_id, $data_packages );
 
         // set session data for add_rates
         WC()->session->set( 'data_kurir' , $data_list_kurir );
