@@ -1,6 +1,6 @@
 <?php
 
-function get_province_name( $country_id, $province_id ){
+function get_province_name( $country_id, $province_id ){    
     
     $countries_obj = new WC_Countries();   
     $country_states_array = $countries_obj->get_states();
@@ -13,11 +13,12 @@ function get_province_name( $country_id, $province_id ){
 function get_api_province_id( $province_name, $endpoint_province ){
     
     $api_url_province = API_URL.''.$endpoint_province;
+    $api_key = carbon_get_theme_option('shipper_api_key');
 
     $args = array(
     'headers' => array(
         'Content-Type' => 'application/json',
-        'X-Api-Key' => API_KEY
+        'X-Api-Key' => $api_key
     ));
 
     $request = wp_remote_get(
@@ -45,13 +46,14 @@ function get_api_province_id( $province_name, $endpoint_province ){
 
 function get_list_city( $api_province_id ){
 
-    $endpoint_city = '/v3/location/province/'.$api_province_id.'/cities';
+    $endpoint_city = '/v3/location/province/'.$api_province_id.'/cities?limit=100';
     $api_url_city = API_URL.''.$endpoint_city;
+    $api_key = carbon_get_theme_option('shipper_api_key');
 
     $args = array(
     'headers' => array(
         'Content-Type' => 'application/json',
-        'X-Api-Key' => API_KEY
+        'X-Api-Key' => $api_key
     ));
 
     $request = wp_remote_get(
@@ -67,13 +69,14 @@ function get_list_city( $api_province_id ){
 
 function get_list_kec( $api_city_id ){
 
-    $endpoint_kec   = '/v3/location/city/'.$api_city_id.'/suburbs';
+    $endpoint_kec   = '/v3/location/city/'.$api_city_id.'/suburbs?limit=100';
     $api_url_kec    = API_URL.''.$endpoint_kec;
+    $api_key = carbon_get_theme_option('shipper_api_key');
 
     $args = array(
         'headers' => array(
             'Content-Type' => 'application/json',
-            'X-Api-Key' => API_KEY
+            'X-Api-Key' => $api_key
         )
     );
     
@@ -91,13 +94,14 @@ function get_list_kec( $api_city_id ){
 
 function get_list_keldesa( $api_kec_id ){
     
-    $endpoint_keldesa = '/v3/location/suburb/'.$api_kec_id.'/areas';
+    $endpoint_keldesa = '/v3/location/suburb/'.$api_kec_id.'/areas?limit=100';
     $api_url_keldesa = API_URL.''.$endpoint_keldesa;
+    $api_key = carbon_get_theme_option('shipper_api_key');
 
     $args = array(
         'headers' => array(
             'Content-Type' => 'application/json',
-            'X-Api-Key' => API_KEY
+            'X-Api-Key' => $api_key
         )
     );
 
@@ -132,14 +136,8 @@ function get_packages_data(){
 
         $area_id    = get_term_meta( $item_term->term_taxonomy_id, '_origin_area_id', true);
         $area_text  = get_term_meta( $item_term->term_taxonomy_id, '_origin_area_text', true);
-        
 
         // $cost = carbon_get_term_meta( 32, "shipper_courier_origin_area_id");
-
-        // ob_start();	
-        // echo var_dump( $area_text );
-        // $a = 'test 123'.ob_get_clean();		
-        // error_log($a);
         
         $item_length    = intval( $_product->get_length() );
         $item_height    = intval( $_product->get_height() );
@@ -194,8 +192,9 @@ function get_data_list_kurir( $api_d_area_id, $data_packages ){
     $subtotal       = $data_packages['subtotal'];
     $origin_id      = $data_packages['origin_id'];
 
-    $endpoint_kurir = '/v3/pricing/domestic';
-    $endpoint_url   = API_URL.''.$endpoint_kurir;        
+    $endpoint_kurir = '/v3/pricing/domestic?limit=200';
+    $endpoint_url   = API_URL.''.$endpoint_kurir;  
+    $api_key = carbon_get_theme_option('shipper_api_key');      
 
     $body = array(
         'cod' => false,
@@ -217,7 +216,7 @@ function get_data_list_kurir( $api_d_area_id, $data_packages ){
     $args = array(
         'headers' => array(
             'Content-Type' => 'application/json',
-            'X-Api-Key' => API_KEY
+            'X-Api-Key' => $api_key
         ),
         'body' => $body            
     );

@@ -59,12 +59,28 @@ class Ordv_Shipper_Shipping_Method extends \WC_Shipping_Method {
             endif;
         endforeach;
 
-        
-        $this->add_rate( array(
-            "id"    => $this->id . $this->instance_id,
-            "label" => $title,
-            "cost"  => $cost
-        ));
+        $list_data_kurir = WC()->session->get( 'data_kurir');
+
+        if( NULL == $list_data_kurir ){
+
+            // show nothing
+
+        }else{
+
+            $i = 0;
+            foreach ($list_data_kurir as $detail_kurir_key => $detail_kurir){
+
+                $this->add_rate( array(
+                    "id"    => $detail_kurir->logistic->code.'-'.$detail_kurir_key,
+                    "label" => $detail_kurir->logistic->name.' '.$detail_kurir->rate->name,
+                    "cost"  => $detail_kurir->final_price
+                ));
+
+                $i++;
+            }
+
+        }
+
     }
 
     private function init() {

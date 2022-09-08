@@ -1,6 +1,8 @@
 (function( $ ) {
 	'use strict';
 
+	$('#ordv-kotakab, #ordv-kecamatan, #ordv-keldesa').selectWoo().prop('disabled',true);
+
     $(document.body).on("change", "#billing_state", function() {
         var c = $("#billing_country").val();
         var s = $("#billing_state").val();
@@ -17,11 +19,13 @@
 			dataType: 'json',
 			success: function (data) {
 				var options = '';
+				options += '<option></option>';
 				$.each(data,function(i,o){
-					options += '<option value="'+o.id+'">'+o.name+'</option>';
+					options += '<option value="'+o.id+'" data-label="'+o.name+'">'+o.name+'</option>';
 				});
 		 
 				$('#ordv-kotakab').html(options);
+				$('#ordv-kotakab').selectWoo().prop('disabled',false);
 			}
 		});
 
@@ -41,11 +45,13 @@
 			dataType: 'json',
 			success: function ( data ) {
 				var options = '';
+				options += '<option></option>';
 				$.each(data,function(i,o){
-					options += '<option value="'+o.id+'">'+o.name+'</option>';
+					options += '<option value="'+o.id+'" data-label="'+o.name+'">'+o.name+'</option>';
 				});
 		 
 				$('#ordv-kecamatan').html(options);
+				$('#ordv-kecamatan').selectWoo().prop('disabled',false);
 			}
 		});
 		
@@ -63,13 +69,15 @@
 			},
 			dataType: 'json',
 			success: function ( data ){
-				//console.log(data);
 				var options = '';
+				options += '<option></option>';
 				$.each(data,function(i,o){
-					options += '<option value="'+o.id+'" data-postcode="'+o.postcode+'">'+o.name+'</option>';
+					options += '<option value="'+o.id+'" data-label="'+o.name+'" data-postcode="'+o.postcode+'">'+o.name+'</option>';
 				});
 		 
 				$('#ordv-keldesa').html( options );
+				$('#ordv-keldesa').selectWoo().prop('disabled',false);
+				$('body').trigger('update_checkout');
 			}
 		});
 	});
@@ -80,6 +88,15 @@
 
 		var pc = $('#ordv-keldesa').find(':selected').attr('data-postcode');
 		$('#billing_postcode').val(pc);
+
+		// set data city
+		var dk = $('#ordv-keldesa').find(':selected').attr('data-label');
+		var kc = $('#ordv-kecamatan').find(':selected').attr('data-label');
+		var kk = $('#ordv-kotakab').find(':selected').attr('data-label');
+
+		var city_label = dk+', '+kc+', '+kk;
+		$('#billing_city').val(city_label);
+
 		
 		$.ajax({
 			type: 'POST',
@@ -91,46 +108,13 @@
 			},
 			dataType: "json",
 			success: function (data) {
-				//$('body').trigger('update_checkout');
-				$('.woocommerce-shipping-totals > td').html(data);				
+				$('body').trigger('update_checkout');			
 			}
-		});
-		
-		
+		});		
 
 	});
 
 	
-	$(document.body).on( "change", "input[name=shipping_method]", function(){
-		// request update_checkout to domain.com/checkout/?wc-ajax=update_order_review
-		
-		var a = $('input[name=shipping_method]:checked').val();
-		var b = $('input[name=shipping_method]:checked').attr('data-kurir-price');
-
-		$.ajax({
-			type: 'POST',
-			url: checkout_ajax.ajax_url,
-			data: {
-				'a' : a,
-				'b' : b,
-				'action' : checkout_ajax.shipping.action,
-				'nonce': checkout_ajax.shipping.nonce
-			},
-			async: false,
-			dataType: 'json',
-			success: function (data) {
-				// no data send
-
-				//console.log(data);
-				//var new_total	= '<span class="woocommerce-Price-currencySymbol">Rp</span> ';
-				//new_total += data;
-
-				//$('.order-total .woocommerce-Price-amount bdi').html(new_total);
-				//$('body').trigger('update_checkout');
-			}
-		});
-		
-	});
 
 	/**
 	 * All of the code for your public-facing JavaScript source

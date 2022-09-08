@@ -63,49 +63,8 @@ class Ordv_Shipper_Checkout {
         return $states;
         
     }
-
 	
-
-    public function show_all_fields( $fields ){
-    
-        $api_url_province = API_URL.''.$this->endpoint_province;
-
-        $args = array(
-        'headers' => array(
-            'Content-Type' => 'application/json',
-            'X-Api-Key' => API_KEY
-        ));
-
-        $request = wp_remote_get(
-            $api_url_province,
-            $args
-        );
-
-        $body = wp_remote_retrieve_body( $request );
-
-        $data_api       = json_decode($body);
-        $data_province  = $data_api->data;
-
-
-
-        $select_province = 'DI Yogyakarta';
-
-        $selected_province_data = [];
-
-        foreach ($data_province as $d) {
-            if( $select_province === $d->name ){
-                array_push( $selected_province_data, $d );
-            }
-        }
-
-        echo '<pre>';
-        print_r( $selected_province_data[0]->id );
-        echo '</pre>';
-
-    }
-
     public function remove_checkout_field( $fields ){
-
         
         unset($fields['billing']['billing_company']);           // remove company field
         unset($fields['billing']['billing_address_1']);         // remove billing address 1 field
@@ -118,7 +77,8 @@ class Ordv_Shipper_Checkout {
     }
 
     public function add_checkout_fields( $fields ){
-        $fields['billing']['ordv-complete-address'] = array(
+
+        $fields['billing']['billing_address_1'] = array(
             'type'      => 'textarea',
             'label'     => __('Address', 'woocommerce'),
             'placeholder'   => _x('Nama jalan dan nomor rumah', 'placeholder', 'woocommerce'),
@@ -135,9 +95,7 @@ class Ordv_Shipper_Checkout {
             'required'  => true,
             'class'     => array('form-row-wide'),
             'clear'     => true,
-            'options'   => array(
-                            'opt_1' => '',
-                           ),
+            'options'   => array( '' => '' ),
             'priority'  => 82
          );
 
@@ -148,36 +106,45 @@ class Ordv_Shipper_Checkout {
             'required'  => true,
             'class'     => array('form-row-wide'),
             'clear'     => true,
-            'options'   => array(
-                'opt_1' => '',
-            ),
+            'options'   => array( '' => '' ),
             'priority'  => 83
          );
 
-         $fields['billing']['ordv-keldesa'] = array(
+        $fields['billing']['ordv-keldesa'] = array(
             'type'      => 'select',
             'label'     => __('Kelurahan / Desa', 'woocommerce'),
             'placeholder'   => _x('Pilih Kelurahan / Desa...', 'placeholder', 'woocommerce'),
             'required'  => true,
             'class'     => array('form-row-wide'),
             'clear'     => true,
-            'options'   => array(
-                'opt_1' => '',
-            ),
+            'options'   => array( '' => '' ),
             'priority'  => 84
-         );
-         
+        );
+
+        $fields['billing']['billing_city'] = array(
+            'type'      => 'hidden',
+            'label'     => __('city', 'woocommerce'),
+            'placeholder'   => _x('', 'woocommerce'),
+            'required'  => true,
+            'class'     => array('form-row-wide'),
+            'priority'  => 85
+        );
+
+        $fields['billing']['billing_city']['label'] = false;
     
-         return $fields;
+        return $fields;
     }
 
     public function load_checkout_scripts(){
 
-        $style = '#billing_country_field, #shipping_country_field { display: none; }';
+        $style = '#billing_country_field, #shipping_country_field{ display: none !important; }';
         echo '<style>'.$style.'</style>'."\n";
 
         if ( is_checkout() ) {
-            wp_enqueue_script( 'checkout-script', plugin_dir_url( __DIR__ ). 'public/js/ordv-shipper-checkout.js', array( 'jquery' ), ORDV_SHIPPER_VERSION, true );
+
+            WC()->session->set( 'data_kurir', null );
+
+            wp_enqueue_script( 'checkout-script', plugin_dir_url( __DIR__ ). 'public/js/ordv-shipper-checkout.js', array( 'jquery', 'selectWoo' ), ORDV_SHIPPER_VERSION, true );
             
             $settings = array(
                 'ajax_url'  => admin_url( 'admin-ajax.php' ),
@@ -196,11 +163,7 @@ class Ordv_Shipper_Checkout {
                 'area'      => [
                     'action'    => 'get_data_kurir',
                     'nonce'     => wp_create_nonce( 'ajax-nonce' )
-                ],
-                'shipping' => [
-                    'action'    => 'recalculate_shipping',
-                    'nonce'     => wp_create_nonce( 'ajax-nonce' )
-                ] 
+                ]
             );
 
             wp_localize_script( 'checkout-script', 'checkout_ajax', $settings);
@@ -266,11 +229,10 @@ class Ordv_Shipper_Checkout {
 
         $data_list_kurir = get_data_list_kurir( $api_d_area_id, $data_packages );
 
-        ob_start();
-        include plugin_dir_path( dirname( __FILE__ ) ) . 'public/partials/list-opsi-kurir.php';
-        $result = ob_get_clean();
+        // set session data for add_rates
+        WC()->session->set( 'data_kurir' , $data_list_kurir );
 
-        //echo json_encode( $result );
+        $result = 'ok';
         wp_send_json( $result );
         wp_die();
 
@@ -310,66 +272,9 @@ class Ordv_Shipper_Checkout {
         foreach ($packages as $package_key => $package) {
             $session_key = 'shipping_for_package_'.$package_key;
             $stored_rates = WC()->session->__unset($session_key);
-        }       
-        
-    }
-
-
-    public function recalculate_shipping(){
-        
-        if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
-            die( 'Close The Door!');        
         }
-
-        if( WC()->session->get( 'shipping_kurir') ){
-            WC()->session->__unset( 'shipping_kurir' );
-            WC()->session->__unset( 'shipping_price' );
-        }
-        
-        $shipping_method    = $_POST['a'];
-        $shipping_price     = intval($_POST['b']);
-
-        $bh_packages = WC()->cart->get_shipping_packages();
-
-        $prev_subtotal  = intval($bh_packages[0]['cart_subtotal']);
-        $new_subtotal   = ( $prev_subtotal + $shipping_price );
-
-        //Set session for add rates data
-        WC()->session->set( 'shipping_kurir' , $shipping_method );
-        WC()->session->set( 'shipping_price' , $shipping_price );
-        
-       
-        wp_send_json( $new_subtotal);
-        wp_die();
-
 
     }
-
-
-    public function adjust_shipping_rate( $rates, $package) {     
-        
-        $cost   = 10000;
-        $label  = 'Happy shippping';
-
-        if( '' != WC()->session->get('shipping_kurir') ){
-            $label = WC()->session->get('shipping_kurir');
-        }
-
-        if( '' != WC()->session->get('shipping_price') ){
-            $cost = intval( WC()->session->get('shipping_price'));
-        }
-
-            
-            foreach ( $rates as $rate_key => $rate ) {           
-                if( $rate->method_id === 'ordv-shipper'){                    
-                    $rates[$rate_key]->label    = $label;
-                    $rates[$rate_key]->cost     = $cost;
-                }
-            }
-
-        return $rates;
-    }
-
     
     public function filter_cart_needs_shipping( $needs_shipping ) {
         if ( is_cart() ) {
@@ -377,6 +282,6 @@ class Ordv_Shipper_Checkout {
         }
         return $needs_shipping;
     }
-    
+
 
 }
