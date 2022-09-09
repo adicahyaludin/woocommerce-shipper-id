@@ -3,6 +3,7 @@
 
 	$('#ordv-kotakab, #ordv-kecamatan, #ordv-keldesa').selectWoo().prop('disabled',true);
 	$('#billing_delivery_option_field input[type=radio]').prop("disabled",true);
+	$('#billing_delivery_option_field input[type=radio]').html('');
 
     $(document.body).on("change", "#billing_state", function() {
         var c = $("#billing_country").val();
@@ -101,11 +102,11 @@
 		});
 	});
 
-	$(document.body).on( "change", "#ordv-keldesa", function(){
-
-		$('body').trigger('update_checkout');
-		$('#billing_delivery_option_field input[type=radio]').html('');	
+	$(document.body).on( "change", "#ordv-keldesa", function(){		
+		
 		$('#billing_delivery_option_field input[type=radio]').prop("disabled",false);
+		$('#billing_delivery_option_field input[type=radio]').html('');	
+		$('body').trigger('update_checkout');
 
 	});
 

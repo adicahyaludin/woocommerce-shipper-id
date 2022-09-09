@@ -248,6 +248,31 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $deliv
     $data_api           = json_decode($body);
     $data_list_kurir    = $data_api->data->pricings;
 
-    return $data_list_kurir;
+    
+    $available_kurir    = get_option('woocommerce_ordv-shipper_2_settings');
+    $enable_kurir       = $available_kurir['logistic']['enabled'];
+    
+
+    // create new array data for filtered 
+    $list_available_kurir =  array();
+    foreach ($data_list_kurir as $key => $kurir) {
+        $list = array(
+            'logistic_id'   => strval($kurir->logistic->id),
+            'logistic_code' => $kurir->logistic->code,
+            'logistic_name' => $kurir->logistic->name,
+            'rate_id'       => strval($kurir->rate->id),
+            'rate_name'     => $kurir->rate->name,
+            'final_price'   => $kurir->final_price
+        );
+
+        $list_available_kurir[] = $list; 
+    }
+
+    $new_list_available_kurir = array_filter($list_available_kurir, function($e) use ($enable_kurir){
+        return in_array($e['rate_id'], $enable_kurir);
+    });
+
+    return $new_list_available_kurir;
+
 
 }
