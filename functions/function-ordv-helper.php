@@ -247,11 +247,23 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $deliv
     $body               = wp_remote_retrieve_body( $request );
     $data_api           = json_decode($body);
     $data_list_kurir    = $data_api->data->pricings;
-
     
     $available_kurir    = get_option('woocommerce_ordv-shipper_2_settings');
     $enable_kurir       = $available_kurir['logistic']['enabled'];
-    
+    $order_kurir        = $available_kurir['logistic']['order'];
+
+    //create index for kurir data
+    $kurir_order_value = array();
+    foreach ($order_kurir as $key => $kurir) {
+        
+        $list = array(
+            'service_id' => strval( $kurir ),
+            'order' => $key
+        );
+        
+        $kurir_order_value[] = $list;
+
+    }
 
     // create new array data for filtered 
     $list_available_kurir =  array();
@@ -268,8 +280,27 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $deliv
         $list_available_kurir[] = $list; 
     }
 
+    // filtered available kurir
     $new_list_available_kurir = array_filter($list_available_kurir, function($e) use ($enable_kurir){
         return in_array($e['rate_id'], $enable_kurir);
+    });
+
+    // insert re-order data    
+    foreach ($new_list_available_kurir as $key_kurir => $kurir) {
+        
+        $kurir_rate_id = $kurir['rate_id'];        
+
+        foreach ( $kurir_order_value as $order ) {
+            if( $order['service_id'] == $kurir_rate_id ){
+                $new_list_available_kurir[$key_kurir]['order'] = $order['order'];
+            }
+        }
+
+    }
+
+    // get sorted array
+    usort($new_list_available_kurir, function($a, $b){
+        return $a['order'] <=> $b['order'];
     });
 
     return $new_list_available_kurir;
