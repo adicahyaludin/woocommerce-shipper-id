@@ -39,6 +39,7 @@ class Ordv_Shipper_Shipping_Method extends \WC_Shipping_Method {
         $location_term = "pa_" . carbon_get_theme_option( "shipper_location_term" );
         $location_product_attribute = "attribute_" . $location_term;
 
+
         foreach( $package["contents"] as $hash => $item ) :
             if(
                 array_key_exists("variation", $item) &&
@@ -58,11 +59,28 @@ class Ordv_Shipper_Shipping_Method extends \WC_Shipping_Method {
             endif;
         endforeach;
 
-        $this->add_rate( array(
-            "id"    => $this->id . $this->instance_id,
-            "label" => $title,
-            "cost"  => $cost
-        ));
+        $list_data_kurir = WC()->session->get( 'data_kurir');
+
+        if( NULL == $list_data_kurir ){
+
+            // show nothing
+
+        }else{
+
+            $i = 0;
+            foreach ($list_data_kurir as $detail_kurir_key => $detail_kurir){
+
+                $this->add_rate( array(
+                    "id"    => $detail_kurir['logistic_code'].'-'.$detail_kurir_key,
+                    "label" => $detail_kurir['logistic_name'].' '.$detail_kurir['rate_name'],
+                    "cost"  => $detail_kurir['final_price']
+                ));
+
+                $i++;
+            }
+
+        }
+
     }
 
     private function init() {
