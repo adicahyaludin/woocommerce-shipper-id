@@ -209,7 +209,6 @@ function get_packages_data(){
     $data['origin_lat']     = $origin_lat;
     $data['origin_lng']     = $origin_lng;
 
-
     return $data;
 }
 
@@ -218,12 +217,10 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_
     // add filter weight ( in gr ) and lenght ( in cm )
     
     $total_weight   = ( $data_packages['weight'] / 1000 );
+
     $total_height   = $data_packages['height'];
     $total_width    = $data_packages['width'];
     $total_length   = $data_packages['length'];
-
-
-
 
     $subtotal       = $data_packages['subtotal'];
 
@@ -236,11 +233,27 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_
     
     // array delivery options
 
-    $delivery_options = array( 'instant', 'regular', 'express', 'trucking', 'same-day' );
+    //$delivery_options = array( 'instant', 'regular', 'express', 'trucking', 'same-day' );
 
-    //$endpoint_kurir = '/v3/pricing/domestic/'.$delivery_opt.'?limit=500';
-    $endpoint_kurir = '/v3/pricing/domestic?limit=500';
-    $endpoint_url   = API_URL.''.$endpoint_kurir;  
+    $endpoint_kurir_instant = '/v3/pricing/domestic/instant?limit=500';
+    $endpoint_url_instant   = API_URL.''.$endpoint_kurir_instant;  
+
+    $endpoint_kurir_regular = '/v3/pricing/domestic/regular?limit=500';
+    $endpoint_url_regular   = API_URL.''.$endpoint_kurir_regular;
+
+    $endpoint_kurir_express = '/v3/pricing/domestic/express?limit=500';
+    $endpoint_url_express   = API_URL.''.$endpoint_kurir_express;
+
+
+    $endpoint_kurir_trucking = '/v3/pricing/domestic/trucking?limit=500';
+    $endpoint_url_trucking   = API_URL.''.$endpoint_kurir_trucking;
+
+    $endpoint_kurir_same_day = '/v3/pricing/domestic/same-day?limit=500';
+    $endpoint_url_same_day   = API_URL.''.$endpoint_kurir_same_day;
+    
+    //$endpoint_kurir = '/v3/pricing/domestic?limit=500';
+    //$endpoint_url   = API_URL.''.$endpoint_kurir;  
+    
     $api_key = carbon_get_theme_option('shipper_api_key');  
 
 
@@ -273,16 +286,55 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_
         'body' => $body            
     );
 
-    $request = wp_remote_post(
-        $endpoint_url,
+    //'instant'
+    $request_instant = wp_remote_post(
+        $endpoint_url_instant,
         $args
     );
+    $body_instant               = wp_remote_retrieve_body( $request_instant );
+    $data_api_instant           = json_decode($body_instant);
+    $data_list_kurir_instant    = $data_api_instant->data->pricings;
 
-    $body               = wp_remote_retrieve_body( $request );
-    $data_api           = json_decode($body);
-    $data_list_kurir    = $data_api->data->pricings;
+
+    // 'regular'
+    $request_regular = wp_remote_post(
+        $endpoint_url_regular,
+        $args
+    );
+    $body_regular               = wp_remote_retrieve_body( $request_regular );
+    $data_api_regular           = json_decode($body_regular);
+    $data_list_kurir_regular    = $data_api_regular->data->pricings;
+
+    //'express'
+    $request_express = wp_remote_post(
+        $endpoint_url_express,
+        $args
+    );
+    $body_express               = wp_remote_retrieve_body( $request_express );
+    $data_api_express           = json_decode($body_express);
+    $data_list_kurir_express    = $data_api_express->data->pricings;
+
+    //'trucking'
+    $request_trucking = wp_remote_post(
+        $endpoint_url_trucking,
+        $args
+    );
+    $body_trucking               = wp_remote_retrieve_body( $request_trucking );
+    $data_api_trucking           = json_decode($body_trucking);
+    $data_list_kurir_trucking    = $data_api_trucking->data->pricings;
+
+    //'same-day'
+    $request_same_day = wp_remote_post(
+        $endpoint_url_same_day,
+        $args
+    );
+    $body_same_day               = wp_remote_retrieve_body( $request_same_day );
+    $data_api_same_day           = json_decode($body_same_day);
+    $data_list_kurir_same_day    = $data_api_same_day->data->pricings;
+
+
+    $data_list_kurir = array_merge( $data_list_kurir_instant, $data_list_kurir_regular, $data_list_kurir_express, $data_list_kurir_trucking, $data_list_kurir_same_day );
     
-
     // get shipping method options
     $delivery_zones = WC_Shipping_Zones::get_zones();
     $arr_shipping_method = array();
@@ -302,6 +354,8 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_
 
         }
     }
+
+
 
     $data_shipping_method = array();
     foreach ($arr_shipping_method as $shipping_method) {
