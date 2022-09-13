@@ -117,6 +117,31 @@ function get_list_keldesa( $api_kec_id ){
 
 }
 
+function get_list_area( $keyword ){
+
+    $endpoint_listarea = '/v3/location?adm_level=5&keyword='.$keyword;
+    $api_url_listarea = API_URL.''.$endpoint_listarea;
+    $api_key = carbon_get_theme_option('shipper_api_key');
+
+    $args = array(
+        'headers' => array(
+            'Content-Type' => 'application/json',
+            'X-Api-Key' => $api_key
+        )
+    );
+
+    $request = wp_remote_get(
+        $api_url_listarea,
+        $args
+    );
+
+    $body       = wp_remote_retrieve_body( $request );
+    $data_api   = json_decode($body);
+
+    return $data_api->data;
+
+}
+
 function get_packages_data(){    
         
     $data = array();
@@ -188,7 +213,7 @@ function get_packages_data(){
     return $data;
 }
 
-function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $delivery_id, $data_packages ){
+function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_packages ){
     
     $total_weight   = ( $data_packages['weight'] / 1000 );
     $total_height   = $data_packages['height'];
@@ -203,9 +228,8 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $deliv
     $dest_area_lat  = $area_id_lat;
     $dest_area_lng  = $area_id_lng;
     
-    $delivery_opt   = $delivery_id;
-
-    $endpoint_kurir = '/v3/pricing/domestic/'.$delivery_opt.'?limit=500';
+    //$endpoint_kurir = '/v3/pricing/domestic/'.$delivery_opt.'?limit=500';
+    $endpoint_kurir = '/v3/pricing/domestic?limit=500';
     $endpoint_url   = API_URL.''.$endpoint_kurir;  
     $api_key = carbon_get_theme_option('shipper_api_key');  
 
