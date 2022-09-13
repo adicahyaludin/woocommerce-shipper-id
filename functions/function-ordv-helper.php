@@ -215,10 +215,16 @@ function get_packages_data(){
 
 function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_packages ){
     
+    // add filter weight ( in gr ) and lenght ( in cm )
+    
     $total_weight   = ( $data_packages['weight'] / 1000 );
     $total_height   = $data_packages['height'];
     $total_width    = $data_packages['width'];
     $total_length   = $data_packages['length'];
+
+
+
+
     $subtotal       = $data_packages['subtotal'];
 
     $origin_id      = $data_packages['origin_id'];
@@ -228,6 +234,10 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_
     $dest_area_lat  = $area_id_lat;
     $dest_area_lng  = $area_id_lng;
     
+    // array delivery options
+
+    $delivery_options = array( 'instant', 'regular', 'express', 'trucking', 'same-day' );
+
     //$endpoint_kurir = '/v3/pricing/domestic/'.$delivery_opt.'?limit=500';
     $endpoint_kurir = '/v3/pricing/domestic?limit=500';
     $endpoint_url   = API_URL.''.$endpoint_kurir;  
@@ -272,9 +282,47 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_
     $data_api           = json_decode($body);
     $data_list_kurir    = $data_api->data->pricings;
     
-    $available_kurir    = get_option('woocommerce_ordv-shipper_2_settings');
-    $enable_kurir       = $available_kurir['logistic']['enabled'];
-    $order_kurir        = $available_kurir['logistic']['order'];
+
+    // get shipping method options
+    $delivery_zones = WC_Shipping_Zones::get_zones();
+    $arr_shipping_method = array();
+    
+    foreach ($delivery_zones as $zone) {
+
+        foreach( $zone['shipping_methods'] as $shipping_method ){
+
+            $list = array(
+                'id' => $shipping_method->id,
+                'name' => $shipping_method->method_title,
+                'enabled' => $shipping_method->enabled,
+                'instance_setting' => $shipping_method->instance_settings
+            );
+
+            $arr_shipping_method[] = $list;
+
+        }
+    }
+
+    $data_shipping_method = array();
+    foreach ($arr_shipping_method as $shipping_method) {
+        
+        if( 'ordv-shipper' === $shipping_method['id'] && 'yes' === $shipping_method['enabled']){
+
+            $list_data = array(
+                'enable_kurir'  => $shipping_method['instance_setting']['logistic']['enabled'],
+                'order_kurir'   => $shipping_method['instance_setting']['logistic']['order'],
+            );
+
+            $data_shipping_method[] = $list_data;
+
+        }else{
+
+        }
+
+    }
+
+    $enable_kurir       = $data_shipping_method[0]['enable_kurir'];
+    $order_kurir        = $data_shipping_method[0]['order_kurir'];
 
     //create index for kurir data
     $kurir_order_value = array();

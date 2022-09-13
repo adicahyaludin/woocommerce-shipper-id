@@ -100,14 +100,6 @@ class Ordv_Shipper_Checkout {
             'priority'  => 82
         );
 
-        // $fields['billing']['billing_state'] = array(
-        //     'type'      => 'hidden',
-        //     'label'     => __('province', 'woocommerce'),
-        //     'placeholder'   => _x('', 'woocommerce'),
-        //     'required'  => true,
-        //     'class'     => array('form-row-wide'),
-        //     'priority'  => 85
-        // );
 
         $fields['billing']['billing_city'] = array(
             'type'      => 'hidden',
