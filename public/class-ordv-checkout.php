@@ -70,6 +70,7 @@ class Ordv_Shipper_Checkout {
         unset($fields['billing']['billing_address_1']);         // remove billing address 1 field
         unset($fields['billing']['billing_address_2']);         // remove billing address 2 field
         unset($fields['billing']['billing_city']);              // remove billing city field
+        unset($fields['billing']['billing_state']);             // remove billing state field
         
         // return field
         return $fields;
@@ -88,29 +89,7 @@ class Ordv_Shipper_Checkout {
             'priority'  => 35
          );
 
-         $fields['billing']['ordv-kotakab'] = array(
-            'type'      => 'select',
-            'label'     => __('Kota / Kabupaten', 'woocommerce'),
-            'placeholder'   => _x('Pilih Kota / Kabupaten...', 'placeholder', 'woocommerce'),
-            'required'  => true,
-            'class'     => array('form-row-wide'),
-            'clear'     => true,
-            'options'   => array( '' => '' ),
-            'priority'  => 82
-         );
-
-         $fields['billing']['ordv-kecamatan'] = array(
-            'type'      => 'select',
-            'label'     => __('Kecamatan', 'woocommerce'),
-            'placeholder'   => _x('Pilih Kecamatan...', 'placeholder', 'woocommerce'),
-            'required'  => true,
-            'class'     => array('form-row-wide'),
-            'clear'     => true,
-            'options'   => array( '' => '' ),
-            'priority'  => 83
-         );
-
-        $fields['billing']['ordv-keldesa'] = array(
+        $fields['billing']['ordv-area'] = array(
             'type'      => 'select',
             'label'     => __('Kelurahan / Desa', 'woocommerce'),
             'placeholder'   => _x('Pilih Kelurahan / Desa...', 'placeholder', 'woocommerce'),
@@ -118,24 +97,17 @@ class Ordv_Shipper_Checkout {
             'class'     => array('form-row-wide'),
             'clear'     => true,
             'options'   => array( '' => '' ),
-            'priority'  => 84
+            'priority'  => 82
         );
 
-        $fields['billing']['billing_delivery_option'] = array(
-            'type'      => 'radio',
-            'label'     => __('Delivery Options', 'woocommerce'),
-            'required'  => true,
-            'class'     => array('form-row-wide'),
-            'options'   => array(                 
-                'regular'   => 'regular', 
-                'express'   => 'express',
-                'trucking'  => 'trucking', 
-                'same-day'  => 'same day',
-                'instant'   => 'instant'
-            ),
-            'priority'  => 86
-        );
-
+        // $fields['billing']['billing_state'] = array(
+        //     'type'      => 'hidden',
+        //     'label'     => __('province', 'woocommerce'),
+        //     'placeholder'   => _x('', 'woocommerce'),
+        //     'required'  => true,
+        //     'class'     => array('form-row-wide'),
+        //     'priority'  => 85
+        // );
 
         $fields['billing']['billing_city'] = array(
             'type'      => 'hidden',
@@ -146,9 +118,15 @@ class Ordv_Shipper_Checkout {
             'priority'  => 86
         );
 
+        //$fields['billing']['billing_state']['label'] = false;
         $fields['billing']['billing_city']['label'] = false;
     
         return $fields;
+    }
+
+    public function override_default_address_fields( $address_fields ) {
+        $address_fields['state']['required'] = false;
+        return $address_fields;
     }
 
     public function load_checkout_scripts(){
@@ -166,21 +144,13 @@ class Ordv_Shipper_Checkout {
             wp_enqueue_script( 'checkout-script', plugin_dir_url( __DIR__ ). 'public/js/ordv-shipper-checkout.js', array( 'jquery', 'selectWoo' ), ORDV_SHIPPER_VERSION, true );
             
             $settings = array(
-                'ajax_url'  => admin_url( 'admin-ajax.php' ),
-                'city'      => [
-                    'action'    => 'get_data_cities',
-                    'nonce'     => wp_create_nonce('ajax-nonce')
-                ],
-                'kec'       => [
-                    'action'    => 'get_data_kec',
-                    'nonce'     => wp_create_nonce( 'ajax-nonce' )
-                ],
-                'keldes'    => [
-                    'action'    => 'get_data_keldes',
-                    'nonce'     => wp_create_nonce( 'ajax-nonce' )
-                ],
+                'ajax_url'  => admin_url( 'admin-ajax.php' ),               
                 'area'      => [
-                    'action'    => 'get_data_kurir',
+                    'action'    => 'get_data_area',
+                    'nonce'     => wp_create_nonce( 'ajax-nonce' )
+                ],
+                'get_services' => [
+                    'action'    => 'get_data_services',
                     'nonce'     => wp_create_nonce( 'ajax-nonce' )
                 ]
             );
@@ -189,61 +159,45 @@ class Ordv_Shipper_Checkout {
         }        
     }
 
-    public function get_data_cities(){
 
-        // Check for nonce security      
-        if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
-            die( 'Close The Door!');
+    public function get_data_area(){
+
+        if ( wp_verify_nonce( $_GET['nonce'], 'ajax-nonce' ) ) {
+
+
+            $data = array();
+            $keyword = $_GET['search'];
+            
+            if( $keyword ){
+
+                $get_data_area = get_list_area( $keyword );
+
+                foreach ($get_data_area as $key => $area) {
+                    
+                    if ( isset( $area->adm_level_cur->id ) ) :
+
+						$data[] = [
+                            'id' 	=> $area->adm_level_cur->id,
+                            'text' 	=> $area->display_txt,
+                            'lat' => $area->adm_level_cur->geo_coord->lat,
+                            'lng' => $area->adm_level_cur->geo_coord->lng,
+                            'postcode' => $area->adm_level_cur->postcode
+						];
+                        
+
+					endif;
+
+                }
+
+            }
+            
+            WC()->session->__unset( 'data_kurir');
+            wp_send_json( $data );
+
         }
-
-        $country_id     = $_POST['c'];
-        $province_id    = $_POST['s'];
-
-        $endpoint_province = $this->endpoint_province;
-
-        $province_name      = get_province_name( $country_id, $province_id );
-        $api_province_id    = get_api_province_id( $province_name, $endpoint_province );        
-        $get_data_cities    = get_list_city( $api_province_id );
-
-        WC()->session->__unset( 'data_kurir');
-        
-        echo json_encode( $get_data_cities );
-        wp_die();
-
     }
 
-    public function get_data_kec(){
-
-        if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
-            die( 'Close The Door!');
-        }
-
-        $api_city_id    = $_POST['k'];
-        $get_data_kec   = get_list_kec( $api_city_id );
-
-        WC()->session->__unset( 'data_kurir');
-
-        echo json_encode( $get_data_kec );
-        wp_die();
-    }
-
-    public function get_data_keldes(){
-
-        if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
-            die( 'Close The Door!');
-        }
-
-        $api_kec_id    = $_POST['d'];
-        $get_data_keldesa = get_list_keldesa( $api_kec_id );
-
-        WC()->session->__unset( 'data_kurir');
-
-        echo json_encode( $get_data_keldesa ); 
-        wp_die();
-
-    }
-
-    public function get_data_kurir(){
+    public function get_data_services(){
 
         if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
             die( 'Close The Door!');
@@ -252,11 +206,11 @@ class Ordv_Shipper_Checkout {
         $api_d_area_id  = intval( $_POST['a'] );
         $area_id_lat    = $_POST['a_lat'];
         $area_id_lng    = $_POST['a_lng'];
-        $delivery_id    = $_POST['dlvr_id'];
+        // $delivery_id    = $_POST['dlvr_id'];
 
         $data_packages  = get_packages_data();
 
-        $data_list_kurir = get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $delivery_id, $data_packages );
+        $data_list_kurir = get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_packages );
 
         // set session data for add_rates
         WC()->session->set( 'data_kurir' , $data_list_kurir );
@@ -266,6 +220,8 @@ class Ordv_Shipper_Checkout {
         wp_die();
 
     }
+
+
 
     public function custom_shipping_package_name( $name ){
         
