@@ -165,13 +165,12 @@ function get_packages_data(){
         $origin_lat     = get_term_meta( $item_term->term_taxonomy_id, '_shipper_courier_origin_lat', true);
         $origin_lng     = get_term_meta( $item_term->term_taxonomy_id, '_shipper_courier_origin_lng', true);
 
-        // $cost = carbon_get_term_meta( 32, "shipper_courier_origin_area_id");
-        
-        $item_length    = intval( $_product->get_length() );
-        $item_height    = intval( $_product->get_height() );
-        $item_width     = intval( $_product->get_width() );
-        $cart_subtotal  = intval( WC()->cart->get_subtotal() );
-        $origin_id	    = intval( $area_id );
+
+        $item_length    = floatval( $_product->get_length() );
+        $item_height    = floatval( $_product->get_height() );
+        $item_width     = floatval( $_product->get_width() );
+        $cart_subtotal  = floatval( WC()->cart->get_subtotal() );
+        $origin_id	    = floatval( $area_id );
         $origin_text    = strval( $area_text );
        
         $item_data = array(
@@ -213,14 +212,59 @@ function get_packages_data(){
 }
 
 function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_packages ){
-    
-    // add filter weight ( in gr ) and lenght ( in cm )
-    
-    $total_weight   = ( $data_packages['weight'] / 1000 );
 
+    // add filter weight ( in gr ) and lenght ( in cm )    
+    $active_weight_unit = get_option('woocommerce_weight_unit');
+    $total_weight = $data_packages['weight'];
+
+    // convert weight unit to kg.
+		if ( $active_weight_unit !== 'kg' ) {
+			switch ( $active_weight_unit ) {
+				case 'g' :
+					//$weight *= 0.001;
+                    $total_weight  = ( $data_packages['weight'] * 0.001 );
+					break;
+				case 'lbs' :
+					//$weight *= 0.453592;
+                    $total_weight  = ( $data_packages['weight'] * 0.453592 );
+					break;
+				case 'oz' :
+                    $total_weight  = ( $data_packages['weight'] *  0.0283495 );
+					//$weight *= 0.0283495;
+					break;
+			}
+        }
+
+    $active_dimension_unit = get_option('woocommerce_dimension_unit');
     $total_height   = $data_packages['height'];
     $total_width    = $data_packages['width'];
     $total_length   = $data_packages['length'];
+
+    if ( $active_dimension_unit !== 'cm' ) {
+            switch ( $active_dimension_unit ) {
+            case 'm' :                
+                $total_height   =  ( $data_packages['height'] * 100);
+                $total_width    = ( $data_packages['width'] * 100);
+                $total_length   = ( $data_packages['length'] * 100);
+                break;
+            case 'mm' :
+                $total_height   = ( $data_packages['height'] * 0.1 );
+                $total_width    = ( $data_packages['width'] * 0.1 );
+                $total_length   = ( $data_packages['length'] * 0.1 );
+                break;
+            case 'in' :
+                $total_height   = ( $data_packages['height'] * 2.54);
+                $total_width    = ( $data_packages['width'] * 2.54 );
+                $total_length   = ( $data_packages['length'] * 2.54 );
+                break;
+            case 'yd' :
+                $total_height   = ( $data_packages['height'] * 91.44);
+                $total_width    = ( $data_packages['width'] * 91.44);
+                $total_length   = ( $data_packages['length'] * 91.44);
+                break;
+        }
+    }
+
 
     $subtotal       = $data_packages['subtotal'];
 
@@ -231,10 +275,8 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_
     $dest_area_lat  = $area_id_lat;
     $dest_area_lng  = $area_id_lng;
     
-    // array delivery options
 
-    //$delivery_options = array( 'instant', 'regular', 'express', 'trucking', 'same-day' );
-
+    //set endpoint url
     $endpoint_kurir_instant = '/v3/pricing/domestic/instant?limit=500';
     $endpoint_url_instant   = API_URL.''.$endpoint_kurir_instant;  
 
@@ -251,11 +293,7 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_
     $endpoint_kurir_same_day = '/v3/pricing/domestic/same-day?limit=500';
     $endpoint_url_same_day   = API_URL.''.$endpoint_kurir_same_day;
     
-    //$endpoint_kurir = '/v3/pricing/domestic?limit=500';
-    //$endpoint_url   = API_URL.''.$endpoint_kurir;  
-    
     $api_key = carbon_get_theme_option('shipper_api_key');  
-
 
     $body = array(
         'cod' => false,
@@ -332,7 +370,7 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_
     $data_api_same_day           = json_decode($body_same_day);
     $data_list_kurir_same_day    = $data_api_same_day->data->pricings;
 
-
+    
     $data_list_kurir = array_merge( $data_list_kurir_instant, $data_list_kurir_regular, $data_list_kurir_express, $data_list_kurir_trucking, $data_list_kurir_same_day );
     
     // get shipping method options

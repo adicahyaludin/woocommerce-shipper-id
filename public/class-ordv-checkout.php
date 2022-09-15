@@ -89,18 +89,65 @@ class Ordv_Shipper_Checkout {
             'priority'  => 35
          );
 
-        $fields['billing']['ordv-area'] = array(
-            'type'      => 'select',
-            'label'     => __('Kelurahan / Desa', 'woocommerce'),
-            'placeholder'   => _x('Pilih Kelurahan / Desa...', 'placeholder', 'woocommerce'),
-            'required'  => true,
-            'class'     => array('form-row-wide'),
-            'clear'     => true,
-            'options'   => array( '' => '' ),
-            'priority'  => 82
-        );
+
+        if ( is_user_logged_in() ) {
+
+            $user_id = get_current_user_id();
 
 
+            $user_order_area_id = get_user_meta( $user_id, 'user_order_area_id', true );
+            $user_order_area_text = get_user_meta( $user_id, 'user_order_area_text', true );
+            $user_order_area_lat = get_user_meta( $user_id, 'user_order_area_lat', true );
+            $user_order_area_lng = get_user_meta( $user_id, 'user_order_area_lng', true );
+
+            
+            if( $user_order_area_id && $user_order_area_text ){
+
+                $fields['billing']['ordv-area'] = array(
+                    'type'      => 'select',
+                    'label'     => __('Kelurahan / Desa', 'woocommerce'),
+                    'placeholder'   => _x('Pilih Kelurahan / Desa...', 'placeholder', 'woocommerce'),
+                    'required'  => true,
+                    'class'     => array('form-row-wide'),
+                    'clear'     => true,
+                    'options'   => array( 
+                                    $user_order_area_id => $user_order_area_text
+                                ),
+                    'priority'  => 82
+                );
+
+                $fields['billing']['ordv-area']['data-lat'] = $user_order_area_lat;
+                $fields['billing']['ordv-area']['data-lng'] = $user_order_area_lng;
+
+
+            }else{
+
+                $fields['billing']['ordv-area'] = array(
+                    'type'      => 'select',
+                    'label'     => __('Kelurahan / Desa', 'woocommerce'),
+                    'placeholder'   => _x('Pilih Kelurahan / Desa...', 'placeholder', 'woocommerce'),
+                    'required'  => true,
+                    'class'     => array('form-row-wide'),
+                    'clear'     => true,
+                    'options'   => array( '' => '' ),
+                    'priority'  => 82
+                );
+            }
+            
+        } else {
+
+            $fields['billing']['ordv-area'] = array(
+                'type'      => 'select',
+                'label'     => __('Kelurahan / Desa', 'woocommerce'),
+                'placeholder'   => _x('Pilih Kelurahan / Desa...', 'placeholder', 'woocommerce'),
+                'required'  => true,
+                'class'     => array('form-row-wide'),
+                'clear'     => true,
+                'options'   => array( '' => '' ),
+                'priority'  => 82
+            );            
+        }
+        
         $fields['billing']['billing_city'] = array(
             'type'      => 'hidden',
             'label'     => __('city', 'woocommerce'),
@@ -141,6 +188,10 @@ class Ordv_Shipper_Checkout {
                     'action'    => 'get_data_area',
                     'nonce'     => wp_create_nonce( 'ajax-nonce' )
                 ],
+                'get_services_first_time' => [
+                    'action'    => 'get_data_services_first_time',
+                    'nonce'     => wp_create_nonce( 'ajax-nonce' )
+                ],
                 'get_services' => [
                     'action'    => 'get_data_services',
                     'nonce'     => wp_create_nonce( 'ajax-nonce' )
@@ -178,11 +229,9 @@ class Ordv_Shipper_Checkout {
                         
 
 					endif;
-
                 }
-
             }
-            
+
             WC()->session->__unset( 'data_kurir');
             wp_send_json( $data );
 
@@ -194,11 +243,31 @@ class Ordv_Shipper_Checkout {
         if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
             die( 'Close The Door!');
         }
-        
-        $api_d_area_id  = intval( $_POST['a'] );
-        $area_id_lat    = $_POST['a_lat'];
-        $area_id_lng    = $_POST['a_lng'];
-        // $delivery_id    = $_POST['dlvr_id'];
+
+        $get_action  = $_POST['action'];
+
+
+        if( 'get_data_services_first_time' === $get_action ){
+
+            if ( is_user_logged_in() ) {
+
+                $user_id = get_current_user_id();                                
+                $user_order_area_lat = get_user_meta( $user_id, 'user_order_area_lat', true );
+                $user_order_area_lng = get_user_meta( $user_id, 'user_order_area_lng', true );
+            
+            }
+
+            $api_d_area_id  = intval( $_POST['a'] );
+            $area_id_lat    = $user_order_area_lat;
+            $area_id_lng    = $user_order_area_lng;
+
+        }else{
+
+            $api_d_area_id  = intval( $_POST['a'] );
+            $area_id_lat    = $_POST['a_lat'];
+            $area_id_lng    = $_POST['a_lng'];
+
+        }
 
         $data_packages  = get_packages_data();
 
@@ -207,6 +276,15 @@ class Ordv_Shipper_Checkout {
         // set session data for add_rates
         WC()->session->set( 'data_kurir' , $data_list_kurir );
 
+        $data = array(
+            'id'    => $api_d_area_id,
+            'lat'   => $area_id_lat,
+            'lng'   => $area_id_lng
+        );
+
+        // save data for session
+        WC()->session->set( 'data_area' , $data );
+
         $result = 'ok';
         wp_send_json( $result );
         wp_die();
@@ -214,11 +292,13 @@ class Ordv_Shipper_Checkout {
     }
 
 
-
     public function custom_shipping_package_name( $name ){
         
         $name           = 'Pengiriman';
         $packages       = get_packages_data();
+
+        $active_weight_unit     = get_option('woocommerce_weight_unit');
+        $active_dimension_unit  = get_option('woocommerce_dimension_unit');
 
         $total_weight   = $packages['weight'];
         $total_height   = $packages['height'];
@@ -227,9 +307,9 @@ class Ordv_Shipper_Checkout {
         $origin_text    = $packages['origin_text'];
 
         $name       .= '<br/><small>dari '.$origin_text.'</small>';
-        $name       .= '<br/><small>berat '.$total_weight.' gr';
+        $name       .= '<br/><small>berat '.$total_weight.' '.$active_weight_unit;
         $name       .= '</small>';
-        $name       .= '<br/><small>ukuran '.$total_length.'x'.$total_width.'x'.$total_height.'cm</small>';
+        $name       .= '<br/><small>ukuran '.$total_length.'x'.$total_width.'x'.$total_height.' '.$active_dimension_unit.'</small>';
                 
         return $name;
         
