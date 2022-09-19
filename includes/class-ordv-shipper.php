@@ -119,6 +119,7 @@ class Ordv_Shipper {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'functions/logistic.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'functions/location.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'functions/order-shipper.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'functions/check-awb.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
@@ -134,6 +135,8 @@ class Ordv_Shipper {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-ordv-checkout.php';
 
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-ordv-thank-you.php';
+
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-ordv-check-awb.php';
 
 		$this->loader = new Ordv_Shipper_Loader();
 
@@ -230,6 +233,20 @@ class Ordv_Shipper {
 		$plugin_thank_you = new Ordv_Shipper_Thankyou( $this->get_plugin_name(), $this->get_version() );
 		
 		$this->loader->add_action( 'woocommerce_thankyou', 						$plugin_thank_you, 'wc_register_guests', 10, 1 );
+
+		$plugin_check_awb = new Ordv_Shipper_Check_Awb( $this->get_plugin_name(), $this->get_version() );
+		$this->loader->add_action( 'wp_enqueue_scripts',						$plugin_check_awb, 'cek_resi_scripts_load' );
+		$this->loader->add_action( 'init', 										$plugin_check_awb, 'register_check_awb_endpoint');
+		$this->loader->add_filter( 'query_vars',								$plugin_check_awb, 'check_awb_query_vars' );
+		$this->loader->add_filter( 'woocommerce_account_menu_items',			$plugin_check_awb, 'add_check_awb_tab' );
+		$this->loader->add_action( 'woocommerce_account_check-awb_endpoint', 	$plugin_check_awb, 'add_check_awb_content' );
+		$this->loader->add_filter ( 'woocommerce_account_menu_items',			$plugin_check_awb, 'reorder_account_menu' );
+
+		$this->loader->add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $plugin_check_awb, 'handle_order_number_custom_query_var', 10, 2 );
+		
+		$this->loader->add_action( 'wp_ajax_cek_resi_data',						$plugin_check_awb, 'cek_resi_data' );
+		$this->loader->add_action( 'wp_ajax_nopriv_cek_resi_data',				$plugin_check_awb, 'cek_resi_data' );
+		
 	}
 
 	/**
