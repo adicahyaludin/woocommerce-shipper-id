@@ -6,6 +6,28 @@
 
 		$('#billing_postcode').val('');
 
+		var selected_option = $('#ordv-area option:selected').val();
+
+		if( selected_option ){
+			
+			var a = $("#ordv-area").val();
+
+			$.ajax({
+				type: 'POST',
+				url: checkout_ajax.ajax_url,
+				data:{
+					'a' : a,		
+					'nonce' : checkout_ajax.get_services_first_time.nonce,
+					'action' : checkout_ajax.get_services_first_time.action
+				},
+				dataType: 'json',
+				success: function (data) {
+					$('body').trigger('update_checkout');
+				}
+			});
+
+		}
+
 		$('#ordv-area').selectWoo({
 
 			ajax: {
@@ -24,10 +46,11 @@
 						results: data
 					}
 				},
-				cache: true
+				cache: false
 			},
-			minimumInputLength: 3, // only start searching when the user has input 3 or more characters				
+				minimumInputLength: 3, // only start searching when the user has input 3 or more characters				
 		});
+
 
 	});
 

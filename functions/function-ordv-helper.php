@@ -165,13 +165,12 @@ function get_packages_data(){
         $origin_lat     = get_term_meta( $item_term->term_taxonomy_id, '_shipper_courier_origin_lat', true);
         $origin_lng     = get_term_meta( $item_term->term_taxonomy_id, '_shipper_courier_origin_lng', true);
 
-        // $cost = carbon_get_term_meta( 32, "shipper_courier_origin_area_id");
-        
-        $item_length    = intval( $_product->get_length() );
-        $item_height    = intval( $_product->get_height() );
-        $item_width     = intval( $_product->get_width() );
-        $cart_subtotal  = intval( WC()->cart->get_subtotal() );
-        $origin_id	    = intval( $area_id );
+
+        $item_length    = floatval( $_product->get_length() );
+        $item_height    = floatval( $_product->get_height() );
+        $item_width     = floatval( $_product->get_width() );
+        $cart_subtotal  = floatval( WC()->cart->get_subtotal() );
+        $origin_id	    = floatval( $area_id );
         $origin_text    = strval( $area_text );
        
         $item_data = array(
@@ -209,16 +208,64 @@ function get_packages_data(){
     $data['origin_lat']     = $origin_lat;
     $data['origin_lng']     = $origin_lng;
 
-
     return $data;
 }
 
 function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_packages ){
-    
-    $total_weight   = ( $data_packages['weight'] / 1000 );
+
+    // add filter weight ( in gr ) and lenght ( in cm )    
+    $active_weight_unit = get_option('woocommerce_weight_unit');
+    $total_weight = $data_packages['weight'];
+
+    // convert weight unit to kg.
+		if ( $active_weight_unit !== 'kg' ) {
+			switch ( $active_weight_unit ) {
+				case 'g' :
+					//$weight *= 0.001;
+                    $total_weight  = ( $data_packages['weight'] * 0.001 );
+					break;
+				case 'lbs' :
+					//$weight *= 0.453592;
+                    $total_weight  = ( $data_packages['weight'] * 0.453592 );
+					break;
+				case 'oz' :
+                    $total_weight  = ( $data_packages['weight'] *  0.0283495 );
+					//$weight *= 0.0283495;
+					break;
+			}
+        }
+
+    $active_dimension_unit = get_option('woocommerce_dimension_unit');
     $total_height   = $data_packages['height'];
     $total_width    = $data_packages['width'];
     $total_length   = $data_packages['length'];
+
+    if ( $active_dimension_unit !== 'cm' ) {
+            switch ( $active_dimension_unit ) {
+            case 'm' :                
+                $total_height   =  ( $data_packages['height'] * 100);
+                $total_width    = ( $data_packages['width'] * 100);
+                $total_length   = ( $data_packages['length'] * 100);
+                break;
+            case 'mm' :
+                $total_height   = ( $data_packages['height'] * 0.1 );
+                $total_width    = ( $data_packages['width'] * 0.1 );
+                $total_length   = ( $data_packages['length'] * 0.1 );
+                break;
+            case 'in' :
+                $total_height   = ( $data_packages['height'] * 2.54);
+                $total_width    = ( $data_packages['width'] * 2.54 );
+                $total_length   = ( $data_packages['length'] * 2.54 );
+                break;
+            case 'yd' :
+                $total_height   = ( $data_packages['height'] * 91.44);
+                $total_width    = ( $data_packages['width'] * 91.44);
+                $total_length   = ( $data_packages['length'] * 91.44);
+                break;
+        }
+    }
+
+
     $subtotal       = $data_packages['subtotal'];
 
     $origin_id      = $data_packages['origin_id'];
@@ -228,11 +275,25 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_
     $dest_area_lat  = $area_id_lat;
     $dest_area_lng  = $area_id_lng;
     
-    //$endpoint_kurir = '/v3/pricing/domestic/'.$delivery_opt.'?limit=500';
-    $endpoint_kurir = '/v3/pricing/domestic?limit=500';
-    $endpoint_url   = API_URL.''.$endpoint_kurir;  
-    $api_key = carbon_get_theme_option('shipper_api_key');  
 
+    //set endpoint url
+    $endpoint_kurir_instant = '/v3/pricing/domestic/instant?limit=500';
+    $endpoint_url_instant   = API_URL.''.$endpoint_kurir_instant;  
+
+    $endpoint_kurir_regular = '/v3/pricing/domestic/regular?limit=500';
+    $endpoint_url_regular   = API_URL.''.$endpoint_kurir_regular;
+
+    $endpoint_kurir_express = '/v3/pricing/domestic/express?limit=500';
+    $endpoint_url_express   = API_URL.''.$endpoint_kurir_express;
+
+
+    $endpoint_kurir_trucking = '/v3/pricing/domestic/trucking?limit=500';
+    $endpoint_url_trucking   = API_URL.''.$endpoint_kurir_trucking;
+
+    $endpoint_kurir_same_day = '/v3/pricing/domestic/same-day?limit=500';
+    $endpoint_url_same_day   = API_URL.''.$endpoint_kurir_same_day;
+    
+    $api_key = carbon_get_theme_option('shipper_api_key');  
 
     $body = array(
         'cod' => false,
@@ -263,18 +324,97 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_
         'body' => $body            
     );
 
-    $request = wp_remote_post(
-        $endpoint_url,
+    //'instant'
+    $request_instant = wp_remote_post(
+        $endpoint_url_instant,
         $args
     );
+    $body_instant               = wp_remote_retrieve_body( $request_instant );
+    $data_api_instant           = json_decode($body_instant);
+    $data_list_kurir_instant    = $data_api_instant->data->pricings;
 
-    $body               = wp_remote_retrieve_body( $request );
-    $data_api           = json_decode($body);
-    $data_list_kurir    = $data_api->data->pricings;
+
+    // 'regular'
+    $request_regular = wp_remote_post(
+        $endpoint_url_regular,
+        $args
+    );
+    $body_regular               = wp_remote_retrieve_body( $request_regular );
+    $data_api_regular           = json_decode($body_regular);
+    $data_list_kurir_regular    = $data_api_regular->data->pricings;
+
+    //'express'
+    $request_express = wp_remote_post(
+        $endpoint_url_express,
+        $args
+    );
+    $body_express               = wp_remote_retrieve_body( $request_express );
+    $data_api_express           = json_decode($body_express);
+    $data_list_kurir_express    = $data_api_express->data->pricings;
+
+    //'trucking'
+    $request_trucking = wp_remote_post(
+        $endpoint_url_trucking,
+        $args
+    );
+    $body_trucking               = wp_remote_retrieve_body( $request_trucking );
+    $data_api_trucking           = json_decode($body_trucking);
+    $data_list_kurir_trucking    = $data_api_trucking->data->pricings;
+
+    //'same-day'
+    $request_same_day = wp_remote_post(
+        $endpoint_url_same_day,
+        $args
+    );
+    $body_same_day               = wp_remote_retrieve_body( $request_same_day );
+    $data_api_same_day           = json_decode($body_same_day);
+    $data_list_kurir_same_day    = $data_api_same_day->data->pricings;
+
     
-    $available_kurir    = get_option('woocommerce_ordv-shipper_2_settings');
-    $enable_kurir       = $available_kurir['logistic']['enabled'];
-    $order_kurir        = $available_kurir['logistic']['order'];
+    $data_list_kurir = array_merge( $data_list_kurir_instant, $data_list_kurir_regular, $data_list_kurir_express, $data_list_kurir_trucking, $data_list_kurir_same_day );
+    
+    // get shipping method options
+    $delivery_zones = WC_Shipping_Zones::get_zones();
+    $arr_shipping_method = array();
+    
+    foreach ($delivery_zones as $zone) {
+
+        foreach( $zone['shipping_methods'] as $shipping_method ){
+
+            $list = array(
+                'id' => $shipping_method->id,
+                'name' => $shipping_method->method_title,
+                'enabled' => $shipping_method->enabled,
+                'instance_setting' => $shipping_method->instance_settings
+            );
+
+            $arr_shipping_method[] = $list;
+
+        }
+    }
+
+
+
+    $data_shipping_method = array();
+    foreach ($arr_shipping_method as $shipping_method) {
+        
+        if( 'ordv-shipper' === $shipping_method['id'] && 'yes' === $shipping_method['enabled']){
+
+            $list_data = array(
+                'enable_kurir'  => $shipping_method['instance_setting']['logistic']['enabled'],
+                'order_kurir'   => $shipping_method['instance_setting']['logistic']['order'],
+            );
+
+            $data_shipping_method[] = $list_data;
+
+        }else{
+
+        }
+
+    }
+
+    $enable_kurir       = $data_shipping_method[0]['enable_kurir'];
+    $order_kurir        = $data_shipping_method[0]['order_kurir'];
 
     //create index for kurir data
     $kurir_order_value = array();
