@@ -340,5 +340,18 @@ class Ordv_Shipper_Checkout {
         return $needs_shipping;
     }
 
+    public function save_order_custom_meta_data(  $order, $data  ){
+        
+        if ( isset( $_POST['shipping_method'][0] ) ){
+            $order->update_meta_data('rate_id', $_POST['shipping_method'][0] );
+        }
+
+        if ( isset( $_POST['ordv-area'] ) ){
+            $order->update_meta_data('d_area_id', $_POST['ordv-area'] );
+        }
+
+
+    }
+
 
 }

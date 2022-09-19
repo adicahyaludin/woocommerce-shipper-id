@@ -78,8 +78,14 @@
 			}
 		});
 
-
 	});
+
+	$(document).on('change','.shipping_method',function(){
+		var k = $('input[name="shipping_method[0]"]:checked').val();
+		
+	});
+
+	
 	
 	
 

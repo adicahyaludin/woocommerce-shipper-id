@@ -314,6 +314,8 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_
         'item_value' => $subtotal
     );
 
+    
+
     $body = wp_json_encode( $body );
 
     $args = array(

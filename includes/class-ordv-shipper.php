@@ -118,6 +118,7 @@ class Ordv_Shipper {
 		
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'functions/logistic.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'functions/location.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'functions/order-shipper.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
@@ -175,6 +176,20 @@ class Ordv_Shipper {
 		$this->loader->add_action( "wp_ajax_get-locations",				$plugin_admin, "get_locations_by_ajax",		10);
 		$this->loader->add_action( "carbon_fields_term_meta_container_saved", $plugin_admin, "save_custom_term_meta_area",		10);		
 
+		$this->loader->add_filter( 'manage_edit-shop_order_columns',		$plugin_admin,'custom_shop_order_column', 20 );
+		$this->loader->add_action( 'manage_shop_order_posts_custom_column',	$plugin_admin,'custom_orders_list_column_content', 20, 2 );
+
+		$this->loader->add_action( 'admin_action_shipper_create_order', 	$plugin_admin, 'action_shipper_create_order' );		
+		
+		$this->loader->add_filter( 'admin_footer-edit.php', 				$plugin_admin, 'set_pickup_time_form');
+		$this->loader->add_action( 'admin_action_set_pickup_time', 			$plugin_admin, 'action_set_pickup_time' );
+
+		$this->loader->add_action( 'wp_ajax_get_data_status',				$plugin_admin, 'get_data_status' );
+		$this->loader->add_action( 'wp_ajax_nopriv_get_data_status',		$plugin_admin, 'get_data_status' );	
+
+		$this->loader->add_action( 'wp_ajax_get_time_slots',				$plugin_admin, 'get_time_slots' );
+		$this->loader->add_action( 'wp_ajax_nopriv_get_time_slots',			$plugin_admin, 'get_time_slots' );
+				
 	}
 
 	/**
@@ -210,6 +225,7 @@ class Ordv_Shipper {
 		$this->loader->add_action( 'wp_ajax_get_data_services', 					$plugin_checkout, 'get_data_services' );
 		$this->loader->add_action( 'wp_ajax_nopriv_get_data_services',				$plugin_checkout, 'get_data_services' );
 
+		$this->loader->add_action( 'woocommerce_checkout_create_order', 			$plugin_checkout, 'save_order_custom_meta_data', 10, 2 );
 
 		$plugin_thank_you = new Ordv_Shipper_Thankyou( $this->get_plugin_name(), $this->get_version() );
 		
