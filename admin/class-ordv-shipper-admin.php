@@ -76,6 +76,27 @@ class Ordv_Shipper_Admin {
 			] );
 		endif;
 
+		if( 'edit' === $screen->base && 'shop_order' === $screen->post_type  ):
+
+			wp_enqueue_script( $this->plugin_name, ORDV_SHIPPER_URI.'admin/js/ordv-shipper-order.js', array( 'jquery', 'jquery-ui-dialog' ), $this->version, true );
+			
+			$settings = array(
+                'ajax_url'  => admin_url( 'admin-ajax.php' ),               
+                'update_status'      => [
+                    'action'    => 'get_data_status',
+                    'nonce'     => wp_create_nonce( 'ajax-nonce' )
+				],
+				'get_time_slots'	=> [
+					'action'	=> 'get_time_slots',
+					'nonce'		=> wp_create_nonce( 'ajax-nonce' )
+				]
+            );
+
+            wp_localize_script( $this->plugin_name, 'oso_vars', $settings);
+
+		endif;
+		
+
 	}
 
 	/**
@@ -258,4 +279,168 @@ class Ordv_Shipper_Admin {
 		endif;
 
 	}
+
+	/**
+	 * 
+	 */
+
+	public function custom_shop_order_column($columns)
+	{
+		$reordered_columns = array();
+	
+		// Inserting columns to a specific location
+		foreach( $columns as $key => $column){
+			$reordered_columns[$key] = $column;
+			if( $key ==  'wc_actions' ){
+				// Inserting after "Status" column
+				$reordered_columns['shipper'] = __( 'Shipper','plugin_domain');
+			}
+		}
+		return $reordered_columns;
+	}
+
+
+	// Adding custom fields meta data for each new column (example)
+
+	public function custom_orders_list_column_content( $column, $post_id )
+	{
+		switch ( $column )
+		{
+			case 'shipper' :
+				
+				ob_start();
+				include ORDV_SHIPPER_PATH.'admin/partials/order/order-column.php';
+				echo ob_get_clean();
+				
+				break;
+		}
+	}
+
+	public function action_shipper_create_order(){
+
+		if ( ! ( isset( $_REQUEST['action'] ) && 'shipper_create_order' == $_REQUEST['action'] ) ) {
+			return;
+		}
+
+		if ( ! isset( $_GET['nonce'] ) || ! wp_verify_nonce( $_GET['nonce'], 'create_order_shipper_nonce' ) ) {
+			return;
+		}
+
+		$order_id = $_GET['order_id'];
+
+		$data_order_shipper = create_order_shipper( $order_id );
+		
+		$order_shipper_id = $data_order_shipper->order_id;
+
+		// save to meta data order id
+		update_post_meta( $order_id, 'order_shipper_id', $order_shipper_id );
+		update_post_meta( $order_id, 'is_activate', 0 );
+
+		
+		$redirect_args['post_type'] = 'shop_order';
+		$redirect_args['paged'] = ( isset( $_GET['paged'] ) ? absint( $_GET['paged'] ) : 1 );
+		$redirect_url = add_query_arg( $redirect_args, admin_url('edit.php') );
+		
+		wp_redirect( $redirect_url );
+		exit;
+
+
+	}
+
+
+	public function set_pickup_time_form(){
+
+		$currentScreen = get_current_screen();
+		if( 'woocommerce' === $currentScreen->parent_base && 'shop_order' === $currentScreen->post_type  ){
+			?>
+			
+				<div id="my-content-id-x" title="Pilih Waktu Penjemputan" style="display:none">
+					<div id="div-inside"></div>
+				</div>
+
+			<?php
+
+		}else{
+			// do nothing
+		}
+
+	}
+
+
+	public function action_set_pickup_time(){
+
+		if ( ! ( isset( $_REQUEST['action'] ) && 'set_pickup_time' == $_REQUEST['action'] ) ) {
+			return;
+		}
+
+		if ( ! isset( $_POST['set_pickup_time_nonce'] ) || ! wp_verify_nonce( $_POST['set_pickup_time_nonce'], 'set_pickup_time' ) ) {
+			return;
+		}
+
+		if( $_POST['pickup_time']){
+
+			$order_id = $_POST['order_id'];
+			$id_shipper_order = get_post_meta($order_id, 'order_shipper_id', true);
+
+			// get end time & start time
+			$data_time =  $_POST['pickup_time'];
+			$data = explode("|" , $data_time );
+
+			$date_start = $data[0];
+			$date_end	= $data[1];
+
+			
+			$get_pickup_data = do_pickup_order( $id_shipper_order, $date_start, $date_end );
+
+			// save pickup data
+			update_post_meta( $order_id, 'pickup_code', $get_pickup_data->pickup_code );
+			update_post_meta( $order_id, 'is_activate', $get_pickup_data->is_activate );
+			update_post_meta( $order_id, 'pickup_time', $get_pickup_data->pickup_time );
+
+
+		}else{
+			// do nothing
+		}
+
+		$redirect_args['post_type'] = 'shop_order';
+		$redirect_args['paged'] = ( isset( $_POST['paged'] ) ? absint( $_POST['paged'] ) : 1 );
+		$redirect_url = add_query_arg( $redirect_args, admin_url('edit.php') );
+		
+		wp_redirect( $redirect_url );
+		exit;
+
+	}
+
+	public function get_data_status(){
+
+		if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
+            die( 'Close The Door!');
+        }
+
+		$order_id = $_POST['o'];
+		$data_status = get_updated_status( $order_id );
+
+		update_post_meta( $order_id, 'status_tracking', $data_status );
+
+		wp_send_json( $data_status );
+        wp_die();
+
+	}
+
+	public function get_time_slots(){
+
+		if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
+            die( 'Close The Door!');
+        }
+
+		$order_id = $_POST['o_id'];
+
+		ob_start();
+		include ORDV_SHIPPER_PATH.'admin/partials/order/time-slots.php';
+		echo ob_get_clean();
+
+		wp_die();
+
+	}
+
 }

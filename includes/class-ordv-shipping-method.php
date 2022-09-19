@@ -61,6 +61,7 @@ class Ordv_Shipper_Shipping_Method extends \WC_Shipping_Method {
 
         
         $list_data_kurir = WC()->session->get( 'data_kurir');
+        
 
         if( NULL == $list_data_kurir ){
 
@@ -72,7 +73,8 @@ class Ordv_Shipper_Shipping_Method extends \WC_Shipping_Method {
             foreach ($list_data_kurir as $detail_kurir_key => $detail_kurir){
 
                 $this->add_rate( array(
-                    "id"    => $detail_kurir['logistic_code'].'-'.$detail_kurir_key,
+                    //"id"    => $detail_kurir['logistic_code'].'-'.$detail_kurir_key,
+                    "id"    => $detail_kurir['rate_id'],
                     "label" => $detail_kurir['logistic_name'].' '.$detail_kurir['rate_name'],
                     "cost"  => $detail_kurir['final_price']
                 ));

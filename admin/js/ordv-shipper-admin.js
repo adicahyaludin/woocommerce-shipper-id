@@ -62,6 +62,10 @@
 
 		});
 
+		$(document).on('click','.open-dialog',function(){
+			alert('open');
+		});
+
 	});
 
 })( jQuery );
