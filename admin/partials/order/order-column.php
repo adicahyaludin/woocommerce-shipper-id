@@ -51,10 +51,18 @@
             $tracking_status = $get_order_data['tracking_status'];
             
             update_post_meta( $order_id, 'status_tracking',  $tracking_status );
-            update_post_meta( $order_id, 'no_resi',  $awb_number );
+
+            $no_resi = get_post_meta( $order_id, 'no_resi', true );
+
+            if( ! $no_resi | '' == $no_resi){
+                update_post_meta( $order_id, 'no_resi',  $awb_number );
+            }else{
+                // do nothing
+            }
+            //update_post_meta( $order_id, 'no_resi',  $awb_number );
 
             $tracking_status = get_post_meta( $order_id, 'status_tracking', true );
-            $no_resi = get_post_meta( $order_id, 'no_resi', true );
+            
 
         ?>
 
