@@ -110,6 +110,17 @@ class Ordv_Shipper_Thankyou{
 			wc_update_new_customer_past_orders( $user_id );
 			wc_set_customer_auth_cookie( $user_id );
 
+		}else{
+			// if user has registered and doesn't have meta for area_id & text
+			$user = get_user_by( 'email', $order_email );
+			$user_id = $user->ID;
+
+			$data_area = WC()->session->get( 'data_area' );
+
+			update_user_meta( $user_id, 'user_order_area_id',	$data_area['id'] );
+			update_user_meta( $user_id, 'user_order_area_text',	$order->get_billing_city() );
+			update_user_meta( $user_id, 'user_order_area_lat',	$data_area['lat'] );
+			update_user_meta( $user_id, 'user_order_area_lng',	$data_area['lng'] );
 		}
 
 	}

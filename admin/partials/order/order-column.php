@@ -4,7 +4,6 @@
     $order      = wc_get_order( $order_id );
     $get_item   = $order->get_items();
 
-
     //$detail_shipping =  $order->get_shipping_methods();
     $detail_shipping = $order->get_items( 'shipping' );
 
@@ -95,16 +94,6 @@
 <?php else: ?>
     <!-- do nothing --> 
 <?php endif; ?>
-
-
-<!-- 
-<p style="margin-top:8px;">
-    <a class="button wc-action-button wc-action-button-complete complete" href="#">
-        Update Status
-    </a>
-</p>
-
--->
 
 
 
