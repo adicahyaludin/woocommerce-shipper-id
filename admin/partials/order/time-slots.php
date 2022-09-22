@@ -38,7 +38,7 @@
 						
 					?>
 				
-					<form method="POST" action="<?php echo admin_url('admin.php'); ?>">
+					<form method="POST" name="set-pickup-time" id="set-pickup-time" action="<?php echo admin_url('admin.php'); ?>">
 
 						<?php 
 							
@@ -64,8 +64,6 @@
 
 						?>
 						<input type="hidden" id="order_id" name="order_id" value="<?php echo $order_id; ?>" />
-						<input type="hidden" name="action" value="set_pickup_time" />
-						<?php wp_nonce_field( 'set_pickup_time', 'set_pickup_time_nonce' ); ?>
 
 						<input class="button button-primary" type="submit" value="Pilih Jadwal Pickup" style="margin-top:16px;">
 					</form>
