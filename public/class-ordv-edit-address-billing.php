@@ -81,41 +81,49 @@ class Ordv_Shipper_Edit_Address_Billing {
 
     public function edit_billing_add_field( $fields ){
 
-        $user_id = get_current_user_id();
+        global $wp;
+        $current_url    = home_url(add_query_arg(array(),$wp->request));
+        $billing        = home_url('/my-account/edit-address/billing');
 
-        $user_order_area_id = get_user_meta( $user_id, 'user_order_area_id', true );
-        $user_order_area_text = get_user_meta( $user_id, 'user_order_area_text', true );
-        $user_order_area_lat = get_user_meta( $user_id, 'user_order_area_lat', true );
-        $user_order_area_lng = get_user_meta( $user_id, 'user_order_area_lng', true );
+        if( is_wc_endpoint_url('edit-address') && $current_url === $billing ){
 
-            
-        if( $user_order_area_id && $user_order_area_text ){
+            $user_id = get_current_user_id();
 
-            $fields['ordv-edit-billing-kelurahan'] = array(
-                'type'      => 'select',
-                'label'     => __('Kelurahan / Desa', 'woocommerce'),
-                'placeholder'   => _x('Pilih Kelurahan / Desa...', 'placeholder', 'woocommerce'),
-                'required'  => true,
-                'class'     => array('form-row-wide'),
-                'clear'     => true,
-                'options'   => array( 
-                                $user_order_area_id => $user_order_area_text
-                            ),
-                'priority'  => 82
-            ); 
+            $user_order_area_id = get_user_meta( $user_id, 'user_order_area_id', true );
+            $user_order_area_text = get_user_meta( $user_id, 'user_order_area_text', true );
+            // $user_order_area_lat = get_user_meta( $user_id, 'user_order_area_lat', true );
+            // $user_order_area_lng = get_user_meta( $user_id, 'user_order_area_lng', true );
 
-        }else{
+                
+            if( $user_order_area_id && $user_order_area_text ){
 
-            $fields['ordv-edit-billing-kelurahan'] = array(
-                'type'      => 'select',
-                'label'     => __('Kelurahan / Desa', 'woocommerce'),
-                'placeholder'   => _x('Pilih Kelurahan / Desa...', 'placeholder', 'woocommerce'),
-                'required'  => true,
-                'class'     => array('form-row-wide'),
-                'clear'     => true,
-                'options'   => array( '' => '' ),
-                'priority'  => 82
-            ); 
+                $fields['ordv-edit-billing-kelurahan'] = array(
+                    'type'      => 'select',
+                    'label'     => __('Kelurahan / Desa', 'woocommerce'),
+                    'placeholder'   => _x('Pilih Kelurahan / Desa...', 'placeholder', 'woocommerce'),
+                    'required'  => true,
+                    'class'     => array('form-row-wide'),
+                    'clear'     => true,
+                    'options'   => array( 
+                                    $user_order_area_id => $user_order_area_text
+                                ),
+                    'priority'  => 82
+                ); 
+
+            }else{
+
+                $fields['ordv-edit-billing-kelurahan'] = array(
+                    'type'      => 'select',
+                    'label'     => __('Kelurahan / Desa', 'woocommerce'),
+                    'placeholder'   => _x('Pilih Kelurahan / Desa...', 'placeholder', 'woocommerce'),
+                    'required'  => true,
+                    'class'     => array('form-row-wide'),
+                    'clear'     => true,
+                    'options'   => array( '' => '' ),
+                    'priority'  => 82
+                ); 
+
+            }
 
         }
 
