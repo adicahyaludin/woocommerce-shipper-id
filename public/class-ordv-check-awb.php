@@ -62,15 +62,21 @@ class Ordv_Shipper_Check_Awb {
 
 	public function cek_resi_scripts_load(){
 
-		wp_enqueue_script( 'cek-resi-script', ORDV_SHIPPER_URI.'public/js/ordv-check-awb.js', array( 'jquery' ), ORDV_SHIPPER_VERSION, true );
-		$settings = array(
-			'ajax_url'  => admin_url( 'admin-ajax.php' ),               
-			'cek_resi'      => [
-				'action'    => 'cek_resi_data',
-			]
-		);
+		if( shipper_is_wc_endpoint( 'check-awb') ){
 
-		wp_localize_script( 'cek-resi-script', 'cek_resi_ajax', $settings);
+			wp_enqueue_script( 'cek-resi-script', ORDV_SHIPPER_URI.'public/js/ordv-check-awb.js', array( 'jquery' ), ORDV_SHIPPER_VERSION, true );
+			$settings = array(
+				'ajax_url'  => admin_url( 'admin-ajax.php' ),               
+				'cek_resi'      => [
+					'action'    => 'cek_resi_data',
+				]
+			);
+
+			wp_localize_script( 'cek-resi-script', 'cek_resi_ajax', $settings);
+
+		}
+
+
 
 	}
 

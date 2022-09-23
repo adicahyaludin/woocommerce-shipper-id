@@ -138,6 +138,8 @@ class Ordv_Shipper {
 
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-ordv-check-awb.php';
 
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-ordv-edit-address-billing.php';
+
 		$this->loader = new Ordv_Shipper_Loader();
 
 	}
@@ -259,7 +261,16 @@ class Ordv_Shipper {
 		
 		$this->loader->add_action( 'wp_ajax_cek_resi_data',						$plugin_check_awb, 'cek_resi_data' );
 		$this->loader->add_action( 'wp_ajax_nopriv_cek_resi_data',				$plugin_check_awb, 'cek_resi_data' );
-		
+
+		$plugin_edit_address_billing = new Ordv_Shipper_Edit_Address_Billing( $this->get_plugin_name(), $this->get_version() );
+		$this->loader->add_action( 'wp_enqueue_scripts',					$plugin_edit_address_billing, 'load_additonal_styles_scripts' );
+		$this->loader->add_filter( 'woocommerce_default_address_fields',	$plugin_edit_address_billing, 'edit_billing_add_field' );
+
+		$this->loader->add_action( 'wp_ajax_get_edit_data_area',			$plugin_edit_address_billing, 'get_edit_data_area' );
+		$this->loader->add_action( 'wp_ajax_nopriv_get_edit_data_area',		$plugin_edit_address_billing, 'get_edit_data_area' );
+
+		$this->loader->add_action( 'woocommerce_customer_save_address', 	$plugin_edit_address_billing,'save_custom_billing_field_data');
+				
 	}
 
 	/**

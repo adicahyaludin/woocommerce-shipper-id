@@ -1,5 +1,5 @@
 <?php
-    
+
 ?>
 
 <div id="notices-area"></div>

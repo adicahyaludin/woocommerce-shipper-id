@@ -40,8 +40,7 @@
 				
 					<form method="POST" name="set-pickup-time" id="set-pickup-time" action="<?php echo admin_url('admin.php'); ?>">
 
-						<?php 
-							
+						<?php 							
 
 							foreach ($groupedItems as $key => $value) {
 								
@@ -60,7 +59,6 @@
 								}
 								echo '</ul>';
 							}
-
 
 						?>
 						<input type="hidden" id="order_id" name="order_id" value="<?php echo $order_id; ?>" />
