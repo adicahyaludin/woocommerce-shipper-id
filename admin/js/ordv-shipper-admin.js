@@ -47,7 +47,7 @@
 					};
 				},
 				processResults: function (data, params) {			
-					console.log(data);
+					//console.log(data);
 					return {
 						results: data
 					}

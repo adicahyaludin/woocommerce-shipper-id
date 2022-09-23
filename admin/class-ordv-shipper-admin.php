@@ -89,6 +89,14 @@ class Ordv_Shipper_Admin {
 				'get_time_slots'	=> [
 					'action'	=> 'get_time_slots',
 					'nonce'		=> wp_create_nonce( 'ajax-nonce' )
+				],
+				'create_order' => [
+					'action'	=> 'shipper_create_order',
+					'nonce'		=> wp_create_nonce( 'ajax-nonce' )
+				],
+				'set_pickup_time' => [
+					'action'	=> 'set_pickup_time',
+					'nonce'		=> wp_create_nonce( 'ajax-nonce' )
 				]
             );
 
@@ -318,31 +326,29 @@ class Ordv_Shipper_Admin {
 
 	public function action_shipper_create_order(){
 
-		if ( ! ( isset( $_REQUEST['action'] ) && 'shipper_create_order' == $_REQUEST['action'] ) ) {
-			return;
-		}
-
-		if ( ! isset( $_GET['nonce'] ) || ! wp_verify_nonce( $_GET['nonce'], 'create_order_shipper_nonce' ) ) {
-			return;
-		}
-
-		$order_id = $_GET['order_id'];
+		if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
+            die( 'Close The Door!');
+        }
+		$order_id = $_POST['i'];
 
 		$data_order_shipper = create_order_shipper( $order_id );
-		
+
+		$order = wc_get_order( $order_id );		
 		$order_shipper_id = $data_order_shipper->order_id;
 
 		// save to meta data order id
 		update_post_meta( $order_id, 'order_shipper_id', $order_shipper_id );
 		update_post_meta( $order_id, 'is_activate', 0 );
 
-		
-		$redirect_args['post_type'] = 'shop_order';
-		$redirect_args['paged'] = ( isset( $_GET['paged'] ) ? absint( $_GET['paged'] ) : 1 );
-		$redirect_url = add_query_arg( $redirect_args, admin_url('edit.php') );
-		
-		wp_redirect( $redirect_url );
-		exit;
+		// If order is "processing" update status to "waiting for delivery"
+		if( $order->has_status( 'processing' ) ) {
+			$order->update_status('wc-waiting-delivery');
+			$order->save();
+		}
+
+		$result = 'ok';
+		wp_send_json( $result );
+		wp_die();
 
 
 	}
@@ -369,45 +375,50 @@ class Ordv_Shipper_Admin {
 
 	public function action_set_pickup_time(){
 
-		if ( ! ( isset( $_REQUEST['action'] ) && 'set_pickup_time' == $_REQUEST['action'] ) ) {
-			return;
-		}
+		if(isset($_POST['data']))
+		{
+			parse_str($_POST['data'], $data);
 
-		if ( ! isset( $_POST['set_pickup_time_nonce'] ) || ! wp_verify_nonce( $_POST['set_pickup_time_nonce'], 'set_pickup_time' ) ) {
-			return;
-		}
+			$order_id = $data['order_id'];
+			$data_time = $data['pickup_time'];
 
-		if( $_POST['pickup_time']){
+			if( $data_time ){
 
-			$order_id = $_POST['order_id'];
-			$id_shipper_order = get_post_meta($order_id, 'order_shipper_id', true);
+				$id_shipper_order = get_post_meta($order_id, 'order_shipper_id', true);
+					
+					$data = explode("|" , $data_time );
+					$date_start = $data[0];
+					$date_end	= $data[1];
 
-			// get end time & start time
-			$data_time =  $_POST['pickup_time'];
-			$data = explode("|" , $data_time );
+					$get_pickup_data = do_pickup_order( $id_shipper_order, $date_start, $date_end );
 
-			$date_start = $data[0];
-			$date_end	= $data[1];
+					// save pickup data
+					update_post_meta( $order_id, 'pickup_code', $get_pickup_data->pickup_code );
+					update_post_meta( $order_id, 'is_activate', $get_pickup_data->is_activate );
+					update_post_meta( $order_id, 'pickup_time', $get_pickup_data->pickup_time );
 
-			
-			$get_pickup_data = do_pickup_order( $id_shipper_order, $date_start, $date_end );
+					// $order = wc_get_order( $order_id );
 
-			// save pickup data
-			update_post_meta( $order_id, 'pickup_code', $get_pickup_data->pickup_code );
-			update_post_meta( $order_id, 'is_activate', $get_pickup_data->is_activate );
-			update_post_meta( $order_id, 'pickup_time', $get_pickup_data->pickup_time );
+					// if( $order->has_status( 'waiting-delivery' ) ) {
+					// 	$order->update_status('wc-in-shipping');
+					// 	$order->save();
+					// }
 
+			}else{
+
+				// do nothing
+
+			}
 
 		}else{
+
 			// do nothing
+
 		}
 
-		$redirect_args['post_type'] = 'shop_order';
-		$redirect_args['paged'] = ( isset( $_POST['paged'] ) ? absint( $_POST['paged'] ) : 1 );
-		$redirect_url = add_query_arg( $redirect_args, admin_url('edit.php') );
-		
-		wp_redirect( $redirect_url );
-		exit;
+		$result = 'ok';
+		wp_send_json( $result );
+		wp_die();
 
 	}
 
@@ -420,9 +431,34 @@ class Ordv_Shipper_Admin {
 		$order_id = $_POST['o'];
 		$data_status = get_updated_status( $order_id );
 
-		update_post_meta( $order_id, 'status_tracking', $data_status );
+		$data_order_code = $data_status['latest_code'];
+		$data_order_status = $data_status['latest_status'];
 
-		wp_send_json( $data_status );
+		update_post_meta( $order_id, 'status_code', $data_order_code );
+		update_post_meta( $order_id, 'status_tracking', $data_order_status );
+		
+		$order = wc_get_order( $order_id );
+		
+		if( 1190 === $data_order_code ){
+
+			$order->update_status('wc-in-shipping');
+        	$order->save();
+
+		}
+
+		if( 2000 === $data_order_code ){
+
+			$order->update_status('wc-completed');
+        	$order->save();
+
+		}
+
+		$arr_data = array(
+			'order_code' => $data_order_code,
+			'order_status' => $data_order_status
+		);
+
+		wp_send_json( $arr_data );
         wp_die();
 
 	}
@@ -439,6 +475,74 @@ class Ordv_Shipper_Admin {
 		include ORDV_SHIPPER_PATH.'admin/partials/order/time-slots.php';
 		echo ob_get_clean();
 
+		wp_die();
+
+	}
+
+	public function shipper_register_custom_shipping_status(){
+		register_post_status(
+			'wc-waiting-delivery',
+			array(
+				'label'		=> 'Waiting for delivery',
+				'public'	=> true,
+				'show_in_admin_status_list' => true,
+				'show_in_admin_all_list'    => true,
+				'exclude_from_search'       => false,
+				'label_count'	=> _n_noop( 'Waiting for delivery (%s)', 'Waiting for delivery (%s)' )
+			)
+		);
+
+		register_post_status(
+			'wc-in-shipping',
+			array(
+				'label'		=> 'In Shipping',
+				'public'	=> true,
+				'show_in_admin_status_list' => true,
+				'show_in_admin_all_list'    => true,
+				'exclude_from_search'       => false,
+				'label_count'	=> _n_noop( 'In Shipping (%s)', 'In Shipping (%s)' )
+			)
+		);
+
+	}
+
+	public function shipper_add_status_to_list( $order_statuses ){
+
+		$new = array();
+
+		foreach ( $order_statuses as $id => $label ) {
+			
+			if ( 'wc-completed' === $id ) { // before "Completed" status
+				$new[ 'wc-waiting-delivery' ]	= 'Waiting for delivery';
+				$new[ 'wc-in-shipping' ] 		= 'In Shipping';
+			}
+			
+			$new[ $id ] = $label;
+
+		}
+
+		return $new;
+
+	}
+
+	public function get_check_code(){
+
+		if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
+            die( 'Close The Door!');
+        }
+
+		$order_id = $_POST['i'];
+
+		$test_code = get_post_meta( $order_id, 'test_code', true );
+
+		if( !$test_code){
+
+			update_post_meta( $order_id, 'test_code', 1 );
+
+		}else{
+			// do nothing
+		}
+		wp_send_json('ok');
 		wp_die();
 
 	}

@@ -353,5 +353,33 @@ class Ordv_Shipper_Checkout {
 
     }
 
+    public function shipper_additional_detail( $order ){
+
+        $status_tracking = get_post_meta( $order->get_id(), 'status_tracking', true );
+        
+        if( $status_tracking ){
+            $nama = $order->get_billing_first_name().' '.$order->get_billing_last_name();
+            $status_tracking = str_replace('[receiver_name]', $nama, $status_tracking);
+
+            ?>
+                <tr>
+                    <th scope="row">Delivery Status:</th>
+                    <td><?php echo esc_html( $status_tracking ) ?></td>
+                </tr>
+		    <?php
+
+        }else{
+
+            ?>
+                <tr>
+                    <th scope="row">Delivery Status:</th>
+                    <td>-</td>
+                </tr>
+		    <?php
+
+        }
+
+    }
+
 
 }

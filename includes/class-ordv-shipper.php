@@ -119,6 +119,7 @@ class Ordv_Shipper {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'functions/logistic.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'functions/location.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'functions/order-shipper.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'functions/check-awb.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
@@ -134,6 +135,10 @@ class Ordv_Shipper {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-ordv-checkout.php';
 
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-ordv-thank-you.php';
+
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-ordv-check-awb.php';
+
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-ordv-edit-address-billing.php';
 
 		$this->loader = new Ordv_Shipper_Loader();
 
@@ -179,16 +184,26 @@ class Ordv_Shipper {
 		$this->loader->add_filter( 'manage_edit-shop_order_columns',		$plugin_admin,'custom_shop_order_column', 20 );
 		$this->loader->add_action( 'manage_shop_order_posts_custom_column',	$plugin_admin,'custom_orders_list_column_content', 20, 2 );
 
-		$this->loader->add_action( 'admin_action_shipper_create_order', 	$plugin_admin, 'action_shipper_create_order' );		
+		$this->loader->add_action( 'wp_ajax_shipper_create_order',			$plugin_admin, 'action_shipper_create_order' );
+		$this->loader->add_action( 'wp_ajax_nopriv_shipper_create_order',	$plugin_admin, 'action_shipper_create_order' );		
 		
 		$this->loader->add_filter( 'admin_footer-edit.php', 				$plugin_admin, 'set_pickup_time_form');
-		$this->loader->add_action( 'admin_action_set_pickup_time', 			$plugin_admin, 'action_set_pickup_time' );
+		
+		$this->loader->add_action( 'wp_ajax_set_pickup_time',				$plugin_admin, 'action_set_pickup_time' );
+		$this->loader->add_action( 'wp_ajax_nopriv_set_pickup_time',		$plugin_admin, 'action_set_pickup_time' );
 
 		$this->loader->add_action( 'wp_ajax_get_data_status',				$plugin_admin, 'get_data_status' );
 		$this->loader->add_action( 'wp_ajax_nopriv_get_data_status',		$plugin_admin, 'get_data_status' );	
 
 		$this->loader->add_action( 'wp_ajax_get_time_slots',				$plugin_admin, 'get_time_slots' );
 		$this->loader->add_action( 'wp_ajax_nopriv_get_time_slots',			$plugin_admin, 'get_time_slots' );
+
+		$this->loader->add_action( 'init', 									$plugin_admin, 'shipper_register_custom_shipping_status' );
+		$this->loader->add_filter( 'wc_order_statuses',						$plugin_admin, 'shipper_add_status_to_list' );
+
+		// $this->loader->add_action( 'wp_ajax_get_check_code',				$plugin_admin, 'get_check_code' );
+		// $this->loader->add_action( 'wp_ajax_nopriv_get_check_code',			$plugin_admin, 'get_check_code' );
+
 				
 	}
 
@@ -227,9 +242,35 @@ class Ordv_Shipper {
 
 		$this->loader->add_action( 'woocommerce_checkout_create_order', 			$plugin_checkout, 'save_order_custom_meta_data', 10, 2 );
 
+		$this->loader->add_action( 'woocommerce_order_details_after_order_table_items', $plugin_checkout, 'shipper_additional_detail' );
+
+
 		$plugin_thank_you = new Ordv_Shipper_Thankyou( $this->get_plugin_name(), $this->get_version() );
 		
 		$this->loader->add_action( 'woocommerce_thankyou', 						$plugin_thank_you, 'wc_register_guests', 10, 1 );
+
+		$plugin_check_awb = new Ordv_Shipper_Check_Awb( $this->get_plugin_name(), $this->get_version() );
+		$this->loader->add_action( 'wp_enqueue_scripts',						$plugin_check_awb, 'cek_resi_scripts_load' );
+		$this->loader->add_action( 'init', 										$plugin_check_awb, 'register_check_awb_endpoint');
+		$this->loader->add_filter( 'query_vars',								$plugin_check_awb, 'check_awb_query_vars' );
+		$this->loader->add_filter( 'woocommerce_account_menu_items',			$plugin_check_awb, 'add_check_awb_tab' );
+		$this->loader->add_action( 'woocommerce_account_check-awb_endpoint', 	$plugin_check_awb, 'add_check_awb_content' );
+		$this->loader->add_filter ( 'woocommerce_account_menu_items',			$plugin_check_awb, 'reorder_account_menu' );
+
+		$this->loader->add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $plugin_check_awb, 'handle_order_number_custom_query_var', 10, 2 );
+		
+		$this->loader->add_action( 'wp_ajax_cek_resi_data',						$plugin_check_awb, 'cek_resi_data' );
+		$this->loader->add_action( 'wp_ajax_nopriv_cek_resi_data',				$plugin_check_awb, 'cek_resi_data' );
+
+		$plugin_edit_address_billing = new Ordv_Shipper_Edit_Address_Billing( $this->get_plugin_name(), $this->get_version() );
+		$this->loader->add_action( 'wp_enqueue_scripts',					$plugin_edit_address_billing, 'load_additonal_styles_scripts' );
+		$this->loader->add_filter( 'woocommerce_default_address_fields',	$plugin_edit_address_billing, 'edit_billing_add_field' );
+
+		$this->loader->add_action( 'wp_ajax_get_edit_data_area',			$plugin_edit_address_billing, 'get_edit_data_area' );
+		$this->loader->add_action( 'wp_ajax_nopriv_get_edit_data_area',		$plugin_edit_address_billing, 'get_edit_data_area' );
+
+		$this->loader->add_action( 'woocommerce_customer_save_address', 	$plugin_edit_address_billing,'save_custom_billing_field_data');
+				
 	}
 
 	/**

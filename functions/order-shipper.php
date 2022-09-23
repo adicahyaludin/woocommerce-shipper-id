@@ -296,7 +296,15 @@ function get_updated_status( $order_id ){
     $n_data = count($data);
     $latest_data_n = ($n_data - 1);
 
+    $latest_code = $data[$latest_data_n]->shipper_status->code;
     $latest_status = $data[$latest_data_n]->shipper_status->description;
-    return $latest_status;
+
+    $arr_data = array(
+        'latest_code'   => $latest_code,
+        'latest_status' => $latest_status
+    );
+
+    //return $latest_status;
+    return $arr_data;
 
 }
