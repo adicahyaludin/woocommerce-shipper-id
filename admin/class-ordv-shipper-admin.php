@@ -397,12 +397,12 @@ class Ordv_Shipper_Admin {
 					update_post_meta( $order_id, 'is_activate', $get_pickup_data->is_activate );
 					update_post_meta( $order_id, 'pickup_time', $get_pickup_data->pickup_time );
 
-					// $order = wc_get_order( $order_id );
+					$order = wc_get_order( $order_id );
 
-					// if( $order->has_status( 'waiting-delivery' ) ) {
-					// 	$order->update_status('wc-in-shipping');
-					// 	$order->save();
-					// }
+					if( $order->has_status( 'waiting-delivery' ) ) {
+						$order->update_status('wc-in-shipping');
+						$order->save();
+					}
 
 			}else{
 
