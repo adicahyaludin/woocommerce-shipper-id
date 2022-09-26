@@ -84,7 +84,7 @@
 				$('tr#post-'+order_id).html('<td id="loader" colspan="7" style="text-align:left; color:red;">Data is processing...</td>');
 			},
 			success: function (data) {
-				if(data.order_code == 1190 || data.order_code == 2000 ){
+				if( data.order_code == 1170 || data.order_code == 1180 || data.order_code == 1190 || data.order_code == 2000 ){
 					$('tr#post-'+order_id).load(' tr#post-'+order_id+' > *' );
 				}else{					
 					$('tr#post-'+order_id).load(' tr#post-'+order_id+' > *' );
