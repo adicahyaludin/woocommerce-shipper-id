@@ -62,6 +62,10 @@ function create_order_shipper( $order_id ){
     $origin_lat     = get_term_meta( $item_term->term_taxonomy_id, '_shipper_courier_origin_lat', true);
     $origin_lng     = get_term_meta( $item_term->term_taxonomy_id, '_shipper_courier_origin_lng', true);
 
+    // destination cordinates
+    $dest_lat = strval( get_post_meta( $order_id, 'd_lat_area_id', true )); 
+    $dest_lng = strval( get_post_meta( $order_id, 'd_lng_area_id', true )); 
+
     // origin
     $o_address = $area_text;
     $o_area_id = intval( $area_id );
@@ -99,11 +103,16 @@ function create_order_shipper( $order_id ){
         ),
         'destination' =>  array(
             'address'   => $d_address,
-            'area_id'   => $d_area_id
+            'area_id'   => $d_area_id,
+            'lat'       => $dest_lat,
+            'lng'       => $dest_lng 
+
         ),
         'origin'    => array(
             'address'   => $o_address,
-            'area_id'   => $o_area_id
+            'area_id'   => $o_area_id,
+            'lat'       => $origin_lat,
+            'lng'       => $origin_lng
         ),        
         'package'   => array(
             'items'         => $items,
@@ -262,6 +271,7 @@ function do_pickup_order( $id_shipper_order, $date_start, $date_end ){
 
     $body       = wp_remote_retrieve_body( $request );
     $data_api   = json_decode($body);
+
     $data       = $data_api->data->order_activations[0];
 
     return $data;

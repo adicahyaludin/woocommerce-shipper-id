@@ -121,6 +121,9 @@ class Ordv_Shipper_Thankyou{
 			update_user_meta( $user_id, 'user_order_area_text',	$order->get_billing_city() );
 			update_user_meta( $user_id, 'user_order_area_lat',	$data_area['lat'] );
 			update_user_meta( $user_id, 'user_order_area_lng',	$data_area['lng'] );
+
+			WC()->session->__unset( 'data_area');
+
 		}
 
 	}

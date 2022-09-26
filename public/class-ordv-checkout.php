@@ -342,6 +342,7 @@ class Ordv_Shipper_Checkout {
 
     public function save_order_custom_meta_data(  $order, $data  ){
         
+                
         if ( isset( $_POST['shipping_method'][0] ) ){
             $order->update_meta_data('rate_id', $_POST['shipping_method'][0] );
         }
@@ -350,6 +351,14 @@ class Ordv_Shipper_Checkout {
             $order->update_meta_data('d_area_id', $_POST['ordv-area'] );
         }
 
+        $data_dest_cord = WC()->session->get( 'dest_cord' );
+
+        if( $data_dest_cord ){
+            $order->update_meta_data('d_lat_area_id', $data_dest_cord['lat'] );
+            $order->update_meta_data('d_lng_area_id', $data_dest_cord['lng'] );
+        }
+
+        WC()->session->__unset( 'dest_cord');
 
     }
 
