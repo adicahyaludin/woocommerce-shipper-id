@@ -201,10 +201,8 @@ class Ordv_Shipper {
 		$this->loader->add_action( 'init', 									$plugin_admin, 'shipper_register_custom_shipping_status' );
 		$this->loader->add_filter( 'wc_order_statuses',						$plugin_admin, 'shipper_add_status_to_list' );
 
-		// $this->loader->add_action( 'wp_ajax_get_check_code',				$plugin_admin, 'get_check_code' );
-		// $this->loader->add_action( 'wp_ajax_nopriv_get_check_code',			$plugin_admin, 'get_check_code' );
-
-				
+		$this->loader->add_filter( 'woocommerce_customer_meta_fields',		$plugin_admin,  'add_admin_address_field' );
+			
 	}
 
 	/**

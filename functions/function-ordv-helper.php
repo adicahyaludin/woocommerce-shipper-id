@@ -274,7 +274,15 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_
 
     $dest_area_lat  = $area_id_lat;
     $dest_area_lng  = $area_id_lng;
-    
+
+
+    // set session for destination lat & lng order
+    $dest_cord = array(
+        'lat'   => strval( $dest_area_lat ),
+        'lng'   => strval( $dest_area_lng )
+    );
+
+    WC()->session->set( 'dest_cord', $dest_cord );
 
     //set endpoint url
     $endpoint_kurir_instant = '/v3/pricing/domestic/instant?limit=500';

@@ -55,17 +55,16 @@
 				cache: true
 			},
 		});
+	});
 
-		$(document).on('change','.origin-area',function(){
+	$(document).on('change','.origin-area',function(){
 
-			$('#origin_area_text').val( $( ".origin-area option:selected" ).text() );
+		$('#origin_area_text').val( $( ".origin-area option:selected" ).text() );
 
-		});
+	});
 
-		$(document).on('click','.open-dialog',function(){
-			alert('open');
-		});
-
+	$(document).on('click','.open-dialog',function(){
+		alert('open');
 	});
 
 })( jQuery );

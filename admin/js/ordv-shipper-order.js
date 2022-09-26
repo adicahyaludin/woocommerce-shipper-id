@@ -30,122 +30,118 @@
 	 */
 
 	$(document).ready(function(){
-
 		
-		$(document).on('click','.open-dialog',function(e){
-            e.preventDefault();
-			var order_id = $(this).attr('data_order_id');
+	});
 
-            $("#my-content-id-x").dialog({
-                width: "480px",
-                maxWidth: "480px",
-                closeText : '',
-                open: function(event, ui) {
-                    
-					$.ajax({
-						type: 'POST',
-						url: oso_vars.ajax_url,
-						data:{
-							'o_id' : order_id,
-							'action': oso_vars.get_time_slots.action,
-							'nonce': oso_vars.get_time_slots.nonce
-						},
-						//dataType: 'json',
-						beforeSend: function() {
-							// setting a timeout							
-							$('#div-inside').html('<span style="color:red;">sedang memuat data...</span>');
-						},
-						success: function (data) {
-							$('#div-inside').html(data);
-						}
-					});
-					
-                }
-            });
+	$(document).on('click','.open-dialog',function(e){
+		e.preventDefault();
+		var order_id = $(this).attr('data_order_id');
 
+		$("#my-content-id-x").dialog({
+			width: "480px",
+			maxWidth: "480px",
+			closeText : '',
+			open: function(event, ui) {
+				
+				$.ajax({
+					type: 'POST',
+					url: oso_vars.ajax_url,
+					data:{
+						'o_id' : order_id,
+						'action': oso_vars.get_time_slots.action,
+						'nonce': oso_vars.get_time_slots.nonce
+					},
+					//dataType: 'json',
+					beforeSend: function() {
+						// setting a timeout							
+						$('#div-inside').html('<span style="color:red;">sedang memuat data...</span>');
+					},
+					success: function (data) {
+						$('#div-inside').html(data);
+					}
+				});
+				
+			}
 		});
-        
-        $(document).on('click','.update-order-status',function(e){
 
-            e.preventDefault();
-            var order_id = $(this).attr('data_order_id');
+	});
+	
+	$(document).on('click','.update-order-status',function(e){
 
-            $.ajax({
-                type: 'POST',
-                url: oso_vars.ajax_url,
-                data:{
-                    'o' : order_id,
-                    'action' : oso_vars.update_status.action,
-                    'nonce' : oso_vars.update_status.nonce,
-                },
-                dataType: 'json',
-				beforeSend: function() {
-					// setting a timeout
-					//$('p.shipper-status-'+order_id).html('<strong>Status:</strong> <span style="color:red;">sedang memperbarui data...</span>');
-					$('tr#post-'+order_id).html('<td id="loader" colspan="7" style="text-align:left; color:red;">Data is processing...</td>');
-				},
-                success: function (data) {
-					if(data.order_code == 1190 || data.order_code == 2000 ){
-						$('tr#post-'+order_id).load(' tr#post-'+order_id+' > *' );
-					}else{
-						$('p.shipper-status-'+order_id).html('<strong>Status:</strong> '+data.order_status);
-					}                    
-                }
-            });
+		e.preventDefault();
+		var order_id = $(this).attr('data_order_id');
 
-        });
-
-		$(document).on('click','.btn-create-order-shipper', function(e){
-
-			e.preventDefault();
-			var order_id = $(this).attr('data_order_id');
-
-			$.ajax({
-				type: 'POST',
-				url: oso_vars.ajax_url,
-				data: {
-					'i' : order_id,
-					'action': oso_vars.create_order.action,
-					'nonce': oso_vars.create_order.nonce
-				},
-				dataType: 'json',
-				beforeSend: function() {					
-					$('tr#post-'+order_id).html('<td id="loader" colspan="7" style="text-align:left; color:red;">Data is processing...</td>');
-				},
-				success: function (data) {
+		$.ajax({
+			type: 'POST',
+			url: oso_vars.ajax_url,
+			data:{
+				'o' : order_id,
+				'action' : oso_vars.update_status.action,
+				'nonce' : oso_vars.update_status.nonce,
+			},
+			dataType: 'json',
+			beforeSend: function() {				
+				$('tr#post-'+order_id).html('<td id="loader" colspan="7" style="text-align:left; color:red;">Data is processing...</td>');
+			},
+			success: function (data) {
+				if(data.order_code == 1190 || data.order_code == 2000 ){
 					$('tr#post-'+order_id).load(' tr#post-'+order_id+' > *' );
-				}
-			});
-
-		});
-
-		$(document).on('submit','#set-pickup-time',function(e){
-			e.preventDefault();
-
-			var data = $(this).serialize();
-			var order_id = $('#order_id').val();
-
-			$.ajax({
-				type: 'POST',
-				url: oso_vars.ajax_url,
-				data:{
-					'data' : data,
-					'action' : oso_vars.set_pickup_time.action,
-					'nonce' : oso_vars.set_pickup_time.nonce
-				},
-				dataType: 'json',
-				beforeSend: function() {	
-					$( "#my-content-id-x" ).dialog( "close" );				
-					$('tr#post-'+order_id).html('<td id="loader" colspan="7" style="text-align:left; color:red;">Data is processing...</td>');
-				},
-				success: function (data) {
+				}else{					
 					$('tr#post-'+order_id).load(' tr#post-'+order_id+' > *' );
-				}
-			});
-		
+				}                    
+			}
 		});
 
+	});
+
+	$(document).on('click','.btn-create-order-shipper', function(e){
+
+		e.preventDefault();
+		var order_id = $(this).attr('data_order_id');
 		
+		$.ajax({
+			type: 'POST',
+			url: oso_vars.ajax_url,
+			data: {
+				'i' : order_id,
+				'action': oso_vars.create_order.action,
+				'nonce': oso_vars.create_order.nonce
+			},
+			dataType: 'json',
+			beforeSend: function() {					
+				$('tr#post-'+order_id).html('<td id="loader" colspan="7" style="text-align:left; color:red;">Data is processing...</td>');
+			},
+			success: function (data) {
+				$('tr#post-'+order_id).load(' tr#post-'+order_id+' > *' );
+			}
+		});
+
+	});
+
+	$(document).on('submit','#set-pickup-time',function(e){
+		e.preventDefault();
+
+		var data = $(this).serialize();
+		var order_id = $('#order_id').val();
+
+		$.ajax({
+			type: 'POST',
+			url: oso_vars.ajax_url,
+			data:{
+				'data' : data,
+				'action' : oso_vars.set_pickup_time.action,
+				'nonce' : oso_vars.set_pickup_time.nonce
+			},
+			dataType: 'json',
+			beforeSend: function() {	
+				$( "#my-content-id-x" ).dialog( "close" );				
+				$('tr#post-'+order_id).html('<td id="loader" colspan="7" style="text-align:left; color:red;">Data is processing...</td>');
+			},
+			success: function (data) {
+				$('tr#post-'+order_id).load(' tr#post-'+order_id+' > *' );
+			}
+		});
+	
 	});
 
 

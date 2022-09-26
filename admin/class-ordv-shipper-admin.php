@@ -391,7 +391,7 @@ class Ordv_Shipper_Admin {
 					$date_end	= $data[1];
 
 					$get_pickup_data = do_pickup_order( $id_shipper_order, $date_start, $date_end );
-
+					
 					// save pickup data
 					update_post_meta( $order_id, 'pickup_code', $get_pickup_data->pickup_code );
 					update_post_meta( $order_id, 'is_activate', $get_pickup_data->is_activate );

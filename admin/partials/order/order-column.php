@@ -83,9 +83,13 @@
         }
 
         $pickup_code = get_post_meta( $order_id, 'pickup_code', true );
+        $is_activate = get_post_meta( $order_id, 'is_activate', true );
         
 ?>
-    <?php if( ! $pickup_code ):?>
+    <?php 
+        //if( ! $pickup_code ): 
+        if( '1' !== $is_activate ):           
+    ?>
         <p style="margin-top:8px;">                
             <a href="#" class="button wc-action-button open-dialog" data_order_id="<?php echo $order_id; ?>">Aktifkan Pickup Order</a>
         </p>
@@ -97,17 +101,18 @@
 <?php endif; ?>
 
 
-
-
-
 <?php
+
+    $get_is_activate = get_post_meta( $order_id, 'is_activate', true );
     $get_pickup_code = get_post_meta( $order_id, 'pickup_code', true );
-    if( $get_pickup_code ):
+
+    //if( $get_pickup_code ):
+    if( '1' === $get_is_activate ):
 
         $code_status = get_post_meta( $order_id, 'status_code', true );
 ?>
 
-    <?php if( $code_status ): ?>
+    <?php if( $code_status || $is_activate ): ?>
 
         <?php if( '2000' !== $code_status ):?> 
 
