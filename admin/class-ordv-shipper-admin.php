@@ -79,9 +79,9 @@ class Ordv_Shipper_Admin {
 		if( 'edit' === $screen->base && 'shop_order' === $screen->post_type  ):
 
 			wp_enqueue_script( $this->plugin_name, ORDV_SHIPPER_URI.'admin/js/ordv-shipper-order.js', array( 'jquery', 'jquery-ui-dialog' ), $this->version, true );
-			
+
 			$settings = array(
-                'ajax_url'  => admin_url( 'admin-ajax.php' ),               
+                'ajax_url'  => admin_url( 'admin-ajax.php' ),
                 'update_status'      => [
                     'action'    => 'get_data_status',
                     'nonce'     => wp_create_nonce( 'ajax-nonce' )
@@ -103,7 +103,7 @@ class Ordv_Shipper_Admin {
             wp_localize_script( $this->plugin_name, 'oso_vars', $settings);
 
 		endif;
-		
+
 
 	}
 
@@ -194,9 +194,9 @@ class Ordv_Shipper_Admin {
 			$area_text = get_term_meta( $_GET['tag_ID'], '_origin_area_text', true);
 			if ( $area_id && $area_text ) :
 				$shipper_courier_origin_area .= '<option value="'.$area_id.'" selected>'.$area_text.'</option>';
-			endif;	
+			endif;
 		endif;
-		
+
 		$shipper_courier_origin_area .= '</select>';
 		$shipper_courier_origin_area .= '<input type="hidden" id="origin_area_text" name="origin_area_text" value="'.$area_text.'">';
 
@@ -238,7 +238,7 @@ class Ordv_Shipper_Admin {
 	 */
 	public function get_locations_by_ajax() {
 
-		if ( isset( $_GET['nonce'] ) && 
+		if ( isset( $_GET['nonce'] ) &&
 			wp_verify_nonce($_GET['nonce'],'get-locations-by-ajax' ) ) :
 
 			$data = [];
@@ -250,9 +250,9 @@ class Ordv_Shipper_Admin {
 			if ( $_request['search'] ) :
 
 				$locations = ordv_shipper_get_locations( $_request['search'] );
-			
+
 				foreach ( $locations as $key => $location ) :
-			
+
 					if ( isset( $location->adm_level_cur->id ) ) :
 
 						$data[] = [
@@ -263,7 +263,7 @@ class Ordv_Shipper_Admin {
 					endif;
 
 				endforeach;
-			
+
 			endif;
 
 			wp_send_json( $data );
@@ -289,13 +289,13 @@ class Ordv_Shipper_Admin {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 
 	public function custom_shop_order_column($columns)
 	{
 		$reordered_columns = array();
-	
+
 		// Inserting columns to a specific location
 		foreach( $columns as $key => $column){
 			$reordered_columns[$key] = $column;
@@ -315,11 +315,11 @@ class Ordv_Shipper_Admin {
 		switch ( $column )
 		{
 			case 'shipper' :
-				
+
 				ob_start();
 				include ORDV_SHIPPER_PATH.'admin/partials/order/order-column.php';
 				echo ob_get_clean();
-				
+
 				break;
 		}
 	}
@@ -333,7 +333,7 @@ class Ordv_Shipper_Admin {
 
 		$data_order_shipper = create_order_shipper( $order_id );
 
-		$order = wc_get_order( $order_id );		
+		$order = wc_get_order( $order_id );
 		$order_shipper_id = $data_order_shipper->order_id;
 
 		// save to meta data order id
@@ -359,7 +359,7 @@ class Ordv_Shipper_Admin {
 		$currentScreen = get_current_screen();
 		if( 'woocommerce' === $currentScreen->parent_base && 'shop_order' === $currentScreen->post_type  ){
 			?>
-			
+
 				<div id="my-content-id-x" title="Pilih Waktu Penjemputan" style="display:none">
 					<div id="div-inside"></div>
 				</div>
@@ -385,13 +385,13 @@ class Ordv_Shipper_Admin {
 			if( $data_time ){
 
 				$id_shipper_order = get_post_meta($order_id, 'order_shipper_id', true);
-					
+
 					$data = explode("|" , $data_time );
 					$date_start = $data[0];
 					$date_end	= $data[1];
 
 					$get_pickup_data = do_pickup_order( $id_shipper_order, $date_start, $date_end );
-					
+
 					// save pickup data
 					update_post_meta( $order_id, 'pickup_code', $get_pickup_data->pickup_code );
 					update_post_meta( $order_id, 'is_activate', $get_pickup_data->is_activate );
@@ -436,9 +436,9 @@ class Ordv_Shipper_Admin {
 
 		update_post_meta( $order_id, 'status_code', $data_order_code );
 		update_post_meta( $order_id, 'status_tracking', $data_order_status );
-		
+
 		$order = wc_get_order( $order_id );
-		
+
 		if( 1190 === $data_order_code || 1180 === $data_order_code || 1170 === $data_order_code ){
 
 			$order->update_status('wc-in-shipping');
@@ -511,12 +511,12 @@ class Ordv_Shipper_Admin {
 		$new = array();
 
 		foreach ( $order_statuses as $id => $label ) {
-			
+
 			if ( 'wc-completed' === $id ) { // before "Completed" status
 				$new[ 'wc-waiting-delivery' ]	= 'Waiting for delivery';
 				$new[ 'wc-in-shipping' ] 		= 'In Shipping';
 			}
-			
+
 			$new[ $id ] = $label;
 
 		}

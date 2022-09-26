@@ -1,5 +1,14 @@
 <?php
 
+add_action("admin_init", function(){
+    if(isset($_GET['nolan'])) :
+        ?><pre><?php
+        print_r(create_order_shipper(1357));
+        ?></pre><?php
+        exit;
+    endif;
+});
+
 function create_order_shipper( $order_id ){
 
     $endpoint_create_order_shipper      = '/v3/order';
@@ -7,7 +16,6 @@ function create_order_shipper( $order_id ){
 
     $api_key = carbon_get_theme_option('shipper_api_key');
 
-    
     // get data order detail
     $order = wc_get_order( $order_id );
     $order_data = $order->get_data();
@@ -25,7 +33,7 @@ function create_order_shipper( $order_id ){
     // destination
     $d_address = $order_data['billing']['address_1'];
     $d_area_id = intval( get_post_meta($order_id, 'd_area_id', true) );
-    
+
     $list_product = $order->get_items();
 
     $items = array();
@@ -43,7 +51,7 @@ function create_order_shipper( $order_id ){
             'id' =>  $product_id,
             'name' => $product_name,
             'price' => intval( $product_price ),
-            'qty' => $product_qty            
+            'qty' => $product_qty
         );
 
         $items[] = $list;
@@ -52,9 +60,9 @@ function create_order_shipper( $order_id ){
 
     $s_pid          = $items[0]['id'];
     $_product       = wc_get_product( $s_pid );
-
-    $item_attribute = $_product->get_attribute( 'pa_lokasi' );
-    $item_term      = get_term_by( 'name',  $item_attribute, 'pa_lokasi' );
+    $term           = carbon_get_theme_option("shipper_location_term");
+    $item_attribute = $item_data->get_meta("pa_" . $term);
+    $item_term      = get_term_by( 'name',  $item_attribute, 'pa_' . $term );
 
     $area_id        = get_term_meta( $item_term->term_taxonomy_id, '_origin_area_id', true);
     $area_text      = get_term_meta( $item_term->term_taxonomy_id, '_origin_area_text', true);
@@ -63,15 +71,15 @@ function create_order_shipper( $order_id ){
     $origin_lng     = get_term_meta( $item_term->term_taxonomy_id, '_shipper_courier_origin_lng', true);
 
     // destination cordinates
-    $dest_lat = strval( get_post_meta( $order_id, 'd_lat_area_id', true )); 
-    $dest_lng = strval( get_post_meta( $order_id, 'd_lng_area_id', true )); 
+    $dest_lat = strval( get_post_meta( $order_id, 'd_lat_area_id', true ));
+    $dest_lng = strval( get_post_meta( $order_id, 'd_lng_area_id', true ));
 
     // origin
     $o_address = $area_text;
     $o_area_id = intval( $area_id );
 
-    $height = 0; 
-    $length = 0; 
+    $height = 0;
+    $length = 0;
     $weight = 0;
     $width = 0;
     $package_type = 2;
@@ -93,7 +101,7 @@ function create_order_shipper( $order_id ){
 
 
     $body = array(
-    
+
         'consignee' => array(
             'name'          => $first_name.' '.$last_name,
             'phone_number'  => $phone_number
@@ -105,7 +113,7 @@ function create_order_shipper( $order_id ){
             'address'   => $d_address,
             'area_id'   => $d_area_id,
             'lat'       => $dest_lat,
-            'lng'       => $dest_lng 
+            'lng'       => $dest_lng
 
         ),
         'origin'    => array(
@@ -113,7 +121,7 @@ function create_order_shipper( $order_id ){
             'area_id'   => $o_area_id,
             'lat'       => $origin_lat,
             'lng'       => $origin_lng
-        ),        
+        ),
         'package'   => array(
             'items'         => $items,
             'height'        => $height,
@@ -127,14 +135,14 @@ function create_order_shipper( $order_id ){
         'payment_type'  => 'postpay'
     );
 
-    $body = wp_json_encode( $body );
+    $send_body = $body = wp_json_encode( $body );
 
     $args = array(
         'headers' => array(
             'Content-Type' => 'application/json',
             'X-Api-Key' => $api_key
         ),
-        'body' => $body            
+        'body' => $body
     );
 
     $request = wp_remote_post(
@@ -145,6 +153,11 @@ function create_order_shipper( $order_id ){
     $body       = wp_remote_retrieve_body( $request );
     $data_api   = json_decode($body);
     $data       = $data_api->data;
+
+    print_r(array(
+        json_decode($send_body),
+        $data_api
+    ));
 
     return $data;
 
@@ -161,10 +174,10 @@ function get_shipper_order_data( $order_shipper_id ){
         'headers' => array(
             'Content-Type' => 'application/json',
             'X-Api-Key' => $api_key
-        )           
+        )
     );
 
-    $request = wp_remote_get( 
+    $request = wp_remote_get(
         $endpoint_url_get_data_shipper,
         $args
     );
@@ -184,24 +197,24 @@ function get_shipper_order_data( $order_shipper_id ){
         'pickup_code'           => $data_api->data->pickup_code,
         'tracking_status'       => $latest_status
     );
-    
+
 
     return $data;
 
 }
 
 function get_pickup_time(){
-    
+
     date_default_timezone_set('Asia/Jakarta');
 
     $date = date('Y-m-d');
-    $time = date('H:i:s');          
+    $time = date('H:i:s');
 
     //$date_time_req = strval($date.'T'.$time.'+07:00');
     //$date_time_req = $date.'T'.$time.'Z';
     $date_time_zone = 'Asia/Jakarta';
 
-        
+
     $endpoint_get_time_slot      = '/v3/pickup/timeslot';
     $endpoint_url_get_time_slot  = API_URL.''.$endpoint_get_time_slot;
 
@@ -216,18 +229,18 @@ function get_pickup_time(){
         'headers' => array(
             'Content-Type' => 'application/json',
             'X-Api-Key' => $api_key
-        )           
+        )
     );
 
-    $request = wp_remote_get( 
+    $request = wp_remote_get(
         $api_url,
         $args
     );
 
     $body       = wp_remote_retrieve_body( $request );
     $data_api   = json_decode($body);
-    
-    $slot_time = $data_api->data->time_slots; 
+
+    $slot_time = $data_api->data->time_slots;
 
     return $slot_time;
 }
@@ -237,7 +250,7 @@ function do_pickup_order( $id_shipper_order, $date_start, $date_end ){
     $endpoint_do_pickup_order      = '/v3/pickup/timeslot';
     $endpoint_url_do_pickup_order  = API_URL.''.$endpoint_do_pickup_order;
 
-    $api_key = carbon_get_theme_option('shipper_api_key');    
+    $api_key = carbon_get_theme_option('shipper_api_key');
 
     $body = array(
         'data' => array(
@@ -249,10 +262,10 @@ function do_pickup_order( $id_shipper_order, $date_start, $date_end ){
                 'start_time'=> $date_start,
                 'timezone' => 'Asia/Jakarta'
             )
-        )     
-        
+        )
+
     );
-    
+
 
     $body = wp_json_encode( $body );
 
@@ -261,7 +274,7 @@ function do_pickup_order( $id_shipper_order, $date_start, $date_end ){
             'Content-Type' => 'application/json',
             'X-Api-Key' => $api_key
         ),
-        'body' => $body            
+        'body' => $body
     );
 
     $request = wp_remote_post(
@@ -279,7 +292,7 @@ function do_pickup_order( $id_shipper_order, $date_start, $date_end ){
 }
 
 function get_updated_status( $order_id ){
-    
+
     $order_shipper_id = get_post_meta($order_id, 'order_shipper_id', true);
 
     $endpoint_get_status      = '/v3/order/'.$order_shipper_id;
@@ -291,10 +304,10 @@ function get_updated_status( $order_id ){
         'headers' => array(
             'Content-Type' => 'application/json',
             'X-Api-Key' => $api_key
-        )           
+        )
     );
 
-    $request = wp_remote_get( 
+    $request = wp_remote_get(
         $endpoint_url_get_status,
         $args
     );
