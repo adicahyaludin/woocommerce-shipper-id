@@ -439,7 +439,7 @@ class Ordv_Shipper_Admin {
 		
 		$order = wc_get_order( $order_id );
 		
-		if( 1190 === $data_order_code ){
+		if( 1190 === $data_order_code || 1180 === $data_order_code || 1170 === $data_order_code ){
 
 			$order->update_status('wc-in-shipping');
         	$order->save();
