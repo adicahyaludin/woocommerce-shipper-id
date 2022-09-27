@@ -60,9 +60,9 @@ class Ordv_Shipper_Check_Awb {
      * @return void.
      */
 
-	public function cek_resi_scripts_load(){
+	public function ordv_shipper_cek_resi_scripts_load(){
 
-		if( shipper_is_wc_endpoint( 'check-awb') ){
+		if( ordv_shipper_fn_is_wc_endpoint( 'check-awb') ){
 
 			wp_enqueue_script( 'cek-resi-script', ORDV_SHIPPER_URI.'public/js/ordv-check-awb.js', array( 'jquery' ), ORDV_SHIPPER_VERSION, true );
 			$settings = array(
@@ -80,21 +80,21 @@ class Ordv_Shipper_Check_Awb {
 
 	}
 
-    public function register_check_awb_endpoint(){
+    public function ordv_shipper_register_check_awb_endpoint(){
         add_rewrite_endpoint( 'check-awb', EP_ROOT | EP_PAGES );
     }
 
-    public function check_awb_query_vars( $vars ){
+    public function ordv_shipper_check_awb_query_vars( $vars ){
         $vars[] = 'check-awb';
 	    return $vars;
     }
 
-    public function add_check_awb_tab( $items ){
+    public function ordv_shipper_add_check_awb_tab( $items ){
         $items['check-awb'] = 'Cek Resi';
 	    return $items;
     }
 
-    public function reorder_account_menu( $items ){
+    public function ordv_shipper_reorder_account_menu( $items ){
         return array(
 	        'dashboard'          => __( 'Dashboard', 'woocommerce' ),
 	        'orders'             => __( 'Orders', 'woocommerce' ),
@@ -106,7 +106,7 @@ class Ordv_Shipper_Check_Awb {
         );
     }
 
-    public function add_check_awb_content(){
+    public function ordv_shipper_add_check_awb_content(){
 
         ob_start();
         include ORDV_SHIPPER_PATH.'public/partials/ordv-check-awb-public-display.php';
@@ -114,7 +114,7 @@ class Ordv_Shipper_Check_Awb {
 
     }
 
-    public function handle_order_number_custom_query_var( $query, $query_vars ){
+    public function ordv_shipper_handle_order_number_custom_query_var( $query, $query_vars ){
         
         if ( ! empty( $query_vars['no_resi'] ) ) {
             $query['meta_query'][] = array(
@@ -126,7 +126,7 @@ class Ordv_Shipper_Check_Awb {
         return $query;
     }
 
-	public function cek_resi_data(){
+	public function ordv_shipper_cek_resi_data(){
 
 		if(isset($_POST['data']))
 		{
@@ -148,7 +148,7 @@ class Ordv_Shipper_Check_Awb {
 					$get_tracking_id	= get_post_meta($order_id, 'order_shipper_id', true);
 
 					// do ajax here
-					$detail_data = detail_data_tracking( $get_tracking_id );					
+					$detail_data = ordv_shipper_fn_detail_data_tracking( $get_tracking_id );					
 
 					ob_start();
 					include ORDV_SHIPPER_PATH.'public/partials/check-awb/show-data.php';

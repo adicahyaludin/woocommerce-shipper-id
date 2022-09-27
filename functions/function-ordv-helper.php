@@ -1,123 +1,7 @@
 <?php
 
-function get_province_name( $country_id, $province_id ){    
-    
-    $countries_obj = new WC_Countries();   
-    $country_states_array = $countries_obj->get_states();
 
-    // Get the state name:    
-    $state_name  = $country_states_array[$country_id][$province_id];
-    return $state_name;
-}
-
-function get_api_province_id( $province_name, $endpoint_province ){
-    
-    $api_url_province = API_URL.''.$endpoint_province;
-    $api_key = carbon_get_theme_option('shipper_api_key');
-
-    $args = array(
-    'headers' => array(
-        'Content-Type' => 'application/json',
-        'X-Api-Key' => $api_key
-    ));
-
-    $request = wp_remote_get(
-        $api_url_province,
-        $args
-    );
-
-    $body = wp_remote_retrieve_body( $request );
-
-    $data_api       = json_decode($body);
-    $data_province  = $data_api->data;
-
-    $selected_province_data = [];
-
-    foreach ($data_province as $d) {
-        if( $province_name === $d->name ){
-            array_push( $selected_province_data, $d );
-        }
-    }
-
-    $api_selected_province = $selected_province_data[0]->id;
-
-    return $api_selected_province;
-}
-
-function get_list_city( $api_province_id ){
-
-    $endpoint_city = '/v3/location/province/'.$api_province_id.'/cities?limit=100';
-    $api_url_city = API_URL.''.$endpoint_city;
-    $api_key = carbon_get_theme_option('shipper_api_key');
-
-    $args = array(
-    'headers' => array(
-        'Content-Type' => 'application/json',
-        'X-Api-Key' => $api_key
-    ));
-
-    $request = wp_remote_get(
-        $api_url_city,
-        $args
-    );
-
-    $body       = wp_remote_retrieve_body( $request );
-    $data_api   = json_decode($body);
-
-    return $data_api->data;
-}
-
-function get_list_kec( $api_city_id ){
-
-    $endpoint_kec   = '/v3/location/city/'.$api_city_id.'/suburbs?limit=100';
-    $api_url_kec    = API_URL.''.$endpoint_kec;
-    $api_key = carbon_get_theme_option('shipper_api_key');
-
-    $args = array(
-        'headers' => array(
-            'Content-Type' => 'application/json',
-            'X-Api-Key' => $api_key
-        )
-    );
-    
-    $request = wp_remote_get(
-        $api_url_kec,
-        $args
-    );
-
-    $body       = wp_remote_retrieve_body( $request );
-    $data_api   = json_decode($body);
-
-    return $data_api->data;    
-
-}
-
-function get_list_keldesa( $api_kec_id ){
-    
-    $endpoint_keldesa = '/v3/location/suburb/'.$api_kec_id.'/areas?limit=100';
-    $api_url_keldesa = API_URL.''.$endpoint_keldesa;
-    $api_key = carbon_get_theme_option('shipper_api_key');
-
-    $args = array(
-        'headers' => array(
-            'Content-Type' => 'application/json',
-            'X-Api-Key' => $api_key
-        )
-    );
-
-    $request = wp_remote_get(
-        $api_url_keldesa,
-        $args
-    );
-
-    $body       = wp_remote_retrieve_body( $request );
-    $data_api   = json_decode($body);
-
-    return $data_api->data;
-
-}
-
-function get_list_area( $keyword ){
+function ordv_shipper_fn_get_list_area( $keyword ){
 
     $endpoint_listarea = '/v3/location?adm_level=5&keyword='.$keyword;
     $api_url_listarea = API_URL.''.$endpoint_listarea;
@@ -142,7 +26,7 @@ function get_list_area( $keyword ){
 
 }
 
-function get_packages_data(){    
+function ordv_shipper_fn_get_packages_data(){    
         
     $data = array();
 
@@ -211,7 +95,7 @@ function get_packages_data(){
     return $data;
 }
 
-function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_packages ){
+function ordv_shipper_fn_get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_packages ){
 
     // add filter weight ( in gr ) and lenght ( in cm )    
     $active_weight_unit = get_option('woocommerce_weight_unit');
@@ -483,7 +367,7 @@ function get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_
 }
 
 
-function shipper_is_wc_endpoint($endpoint) {
+function ordv_shipper_fn_is_wc_endpoint($endpoint) {
     // Use the default WC function if the $endpoint is not provided
     if (empty($endpoint)) return is_wc_endpoint_url();
     // Query vars check

@@ -1,6 +1,6 @@
 <?php
 
-function detail_data_tracking( $order_shipper_id ){
+function ordv_shipper_fn_detail_data_tracking( $order_shipper_id ){
     $endpoint_get_data_shipper      = '/v3/order/'.$order_shipper_id;
     $endpoint_url_get_data_shipper  = API_URL.''.$endpoint_get_data_shipper;
 

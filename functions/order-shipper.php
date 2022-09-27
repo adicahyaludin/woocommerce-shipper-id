@@ -3,13 +3,13 @@
 add_action("admin_init", function(){
     if(isset($_GET['nolan'])) :
         ?><pre><?php
-        print_r(create_order_shipper(1357));
+        print_r(ordv_shipper_fn_create_order_shipper(1357));
         ?></pre><?php
         exit;
     endif;
 });
 
-function create_order_shipper( $order_id ){
+function ordv_shipper_fn_create_order_shipper( $order_id ){
 
     $endpoint_create_order_shipper      = '/v3/order';
     $endpoint_url_create_order_shipper  = API_URL.''.$endpoint_create_order_shipper;
@@ -60,6 +60,7 @@ function create_order_shipper( $order_id ){
 
     $s_pid          = $items[0]['id'];
     $_product       = wc_get_product( $s_pid );
+    
     $term           = carbon_get_theme_option("shipper_location_term");
     $item_attribute = $item_data->get_meta("pa_" . $term);
     $item_term      = get_term_by( 'name',  $item_attribute, 'pa_' . $term );
@@ -69,7 +70,7 @@ function create_order_shipper( $order_id ){
 
     $origin_lat     = get_term_meta( $item_term->term_taxonomy_id, '_shipper_courier_origin_lat', true);
     $origin_lng     = get_term_meta( $item_term->term_taxonomy_id, '_shipper_courier_origin_lng', true);
-
+ 
     // destination cordinates
     $dest_lat = strval( get_post_meta( $order_id, 'd_lat_area_id', true ));
     $dest_lng = strval( get_post_meta( $order_id, 'd_lng_area_id', true ));
@@ -154,16 +155,16 @@ function create_order_shipper( $order_id ){
     $data_api   = json_decode($body);
     $data       = $data_api->data;
 
-    print_r(array(
-        json_decode($send_body),
-        $data_api
-    ));
+    // print_r(array(
+    //     json_decode($send_body),
+    //     $data_api
+    // ));
 
     return $data;
 
 }
 
-function get_shipper_order_data( $order_shipper_id ){
+function ordv_shipper_fn_get_shipper_order_data( $order_shipper_id ){
 
     $endpoint_get_data_shipper      = '/v3/order/'.$order_shipper_id;
     $endpoint_url_get_data_shipper  = API_URL.''.$endpoint_get_data_shipper;
@@ -203,7 +204,7 @@ function get_shipper_order_data( $order_shipper_id ){
 
 }
 
-function get_pickup_time(){
+function ordv_shipper_fn_get_pickup_time(){
 
     date_default_timezone_set('Asia/Jakarta');
 
@@ -245,7 +246,7 @@ function get_pickup_time(){
     return $slot_time;
 }
 
-function do_pickup_order( $id_shipper_order, $date_start, $date_end ){
+function ordv_shipper_fn_do_pickup_order( $id_shipper_order, $date_start, $date_end ){
 
     $endpoint_do_pickup_order      = '/v3/pickup/timeslot';
     $endpoint_url_do_pickup_order  = API_URL.''.$endpoint_do_pickup_order;
@@ -291,7 +292,7 @@ function do_pickup_order( $id_shipper_order, $date_start, $date_end ){
 
 }
 
-function get_updated_status( $order_id ){
+function ordv_shipper_fn_get_updated_status( $order_id ){
 
     $order_shipper_id = get_post_meta($order_id, 'order_shipper_id', true);
 

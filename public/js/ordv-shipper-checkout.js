@@ -6,10 +6,15 @@
 
 		$('#billing_postcode').val('');
 
-		var selected_option = $('#ordv-area option:selected').val();
+		var selected_option = $('#ordv-area option:selected').val();		
 
 		if( selected_option ){
+
+			var get_text = $('#ordv-area option:selected').text();
+			var s_data = get_text.split(',');
 			
+			$('#billing_postcode').val(s_data[0]);			
+
 			var a = $("#ordv-area").val();
 
 			$.ajax({

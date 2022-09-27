@@ -63,7 +63,7 @@ class Ordv_Shipper_Admin {
 	 * @since 	1.0.0
 	 * @return 	void
 	 */
-	public function enqueue_scripts() {
+	public function ordv_shipper_enqueue_scripts() {
 
 		$screen = get_current_screen();
 
@@ -113,7 +113,7 @@ class Ordv_Shipper_Admin {
 	 * @since 	1.0.0
 	 * @return 	void
 	 */
-	public function enqueue_styles() {
+	public function ordv_shipper_enqueue_styles() {
 
 		$screen = get_current_screen();
 
@@ -132,7 +132,7 @@ class Ordv_Shipper_Admin {
 	 * @since 	1.0.0
 	 * @return 	void
 	 */
-	public function load_carbon_fields() {
+	public function ordv_shipper_load_carbon_fields() {
 
 		\Carbon_Fields\Carbon_Fields::boot();
 
@@ -160,7 +160,7 @@ class Ordv_Shipper_Admin {
 	 * @since 	1.0.0
 	 * @return 	void
 	 */
-	public function add_plugin_options() {
+	public function ordv_shipper_add_plugin_options() {
 
 		Container::make( "theme_options", __("Shipper.id", "ordv-shipper"))
 			->add_fields([
@@ -183,7 +183,7 @@ class Ordv_Shipper_Admin {
 	 * @since 	1.0.0
 	 * @return 	void
 	 */
-	public function add_location_options() {
+	public function ordv_shipper_add_location_options() {
 
 		$shipper_courier_origin_area = '<h3>Origin - Area</h3>';
 		$shipper_courier_origin_area .= '<select class="origin-area" name="origin_area">';
@@ -222,7 +222,7 @@ class Ordv_Shipper_Admin {
 	 * @param  	array 	$methods
 	 * @return 	array
 	 */
-	public function modify_shipping_methods( $methods ) {
+	public function ordv_shipper_modify_shipping_methods( $methods ) {
 
 		require_once( plugin_dir_path( dirname( __FILE__ )) . "includes/class-ordv-shipping-method.php");
 
@@ -236,7 +236,7 @@ class Ordv_Shipper_Admin {
 	 * hooked via action wp_ajax_get-locations, priority 10
 	 * @return json
 	 */
-	public function get_locations_by_ajax() {
+	public function ordv_shipper_get_locations_by_ajax() {
 
 		if ( isset( $_GET['nonce'] ) &&
 			wp_verify_nonce($_GET['nonce'],'get-locations-by-ajax' ) ) :
@@ -277,7 +277,7 @@ class Ordv_Shipper_Admin {
 	 * hooked via action carbon_fields_term_meta_container_saved, priority 10
 	 * @return void
 	 */
-	public function save_custom_term_meta_area() {
+	public function ordv_shipper_save_custom_term_meta_area() {
 
 		if ( isset( $_POST['origin_area'] ) ) :
 
@@ -292,7 +292,7 @@ class Ordv_Shipper_Admin {
 	 *
 	 */
 
-	public function custom_shop_order_column($columns)
+	public function ordv_shipper_custom_shop_order_column($columns)
 	{
 		$reordered_columns = array();
 
@@ -310,7 +310,7 @@ class Ordv_Shipper_Admin {
 
 	// Adding custom fields meta data for each new column (example)
 
-	public function custom_orders_list_column_content( $column, $post_id )
+	public function ordv_shipper_custom_orders_list_column_content( $column, $post_id )
 	{
 		switch ( $column )
 		{
@@ -324,14 +324,14 @@ class Ordv_Shipper_Admin {
 		}
 	}
 
-	public function action_shipper_create_order(){
+	public function ordv_shipper_action_shipper_create_order(){
 
 		if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
             die( 'Close The Door!');
         }
 		$order_id = $_POST['i'];
 
-		$data_order_shipper = create_order_shipper( $order_id );
+		$data_order_shipper = ordv_shipper_fn_create_order_shipper( $order_id );
 
 		$order = wc_get_order( $order_id );
 		$order_shipper_id = $data_order_shipper->order_id;
@@ -354,7 +354,7 @@ class Ordv_Shipper_Admin {
 	}
 
 
-	public function set_pickup_time_form(){
+	public function ordv_shipper_set_pickup_time_form(){
 
 		$currentScreen = get_current_screen();
 		if( 'woocommerce' === $currentScreen->parent_base && 'shop_order' === $currentScreen->post_type  ){
@@ -373,7 +373,7 @@ class Ordv_Shipper_Admin {
 	}
 
 
-	public function action_set_pickup_time(){
+	public function ordv_shipper_action_set_pickup_time(){
 
 		if(isset($_POST['data']))
 		{
@@ -390,7 +390,7 @@ class Ordv_Shipper_Admin {
 					$date_start = $data[0];
 					$date_end	= $data[1];
 
-					$get_pickup_data = do_pickup_order( $id_shipper_order, $date_start, $date_end );
+					$get_pickup_data = ordv_shipper_fn_do_pickup_order( $id_shipper_order, $date_start, $date_end );
 
 					// save pickup data
 					update_post_meta( $order_id, 'pickup_code', $get_pickup_data->pickup_code );
@@ -422,14 +422,14 @@ class Ordv_Shipper_Admin {
 
 	}
 
-	public function get_data_status(){
+	public function ordv_shipper_get_data_status(){
 
 		if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
             die( 'Close The Door!');
         }
 
 		$order_id = $_POST['o'];
-		$data_status = get_updated_status( $order_id );
+		$data_status = ordv_shipper_fn_get_updated_status( $order_id );
 
 		$data_order_code = $data_status['latest_code'];
 		$data_order_status = $data_status['latest_status'];
@@ -463,7 +463,7 @@ class Ordv_Shipper_Admin {
 
 	}
 
-	public function get_time_slots(){
+	public function ordv_shipper_get_time_slots(){
 
 		if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
             die( 'Close The Door!');
@@ -479,7 +479,7 @@ class Ordv_Shipper_Admin {
 
 	}
 
-	public function shipper_register_custom_shipping_status(){
+	public function ordv_shipper_register_custom_shipping_status(){
 		register_post_status(
 			'wc-waiting-delivery',
 			array(
@@ -506,7 +506,7 @@ class Ordv_Shipper_Admin {
 
 	}
 
-	public function shipper_add_status_to_list( $order_statuses ){
+	public function ordv_shipper_shipper_add_status_to_list( $order_statuses ){
 
 		$new = array();
 

@@ -53,7 +53,7 @@ class Ordv_Shipper_Thankyou{
 		$this->version              = $version;
 	}
 
-	public function wc_register_guests(  $order_id ){
+	public function ordv_shipper_wc_register_guests(  $order_id ){
 		
 		// get all the order data
 		$order = new WC_Order($order_id);
@@ -71,6 +71,9 @@ class Ordv_Shipper_Thankyou{
 
 			$random_password = wp_generate_password();
 			$user_id = wp_create_user( $order_email, $random_password, $order_email );
+
+			update_user_meta( $user_id, 'first_name', $order->get_billing_first_name() );
+            update_user_meta( $user_id, 'last_name', $order->get_billing_last_name() );
 
 			//user's billing data
 			update_user_meta( $user_id, 'billing_address_1', $order->get_billing_address_1() );

@@ -55,7 +55,7 @@ class Ordv_Shipper_Checkout {
 
 	}
 
-    public function change_province_name( $states ){
+    public function ordv_shipper_change_province_name( $states ){
         
         $states['ID']['AC'] = 'Aceh';
         $states['ID']['YO'] = 'DI Yogyakarta';
@@ -64,7 +64,7 @@ class Ordv_Shipper_Checkout {
         
     }
 	
-    public function remove_checkout_field( $fields ){
+    public function ordv_shipper_remove_checkout_field( $fields ){
         
         unset($fields['billing']['billing_company']);           // remove company field
         unset($fields['billing']['billing_address_1']);         // remove billing address 1 field
@@ -77,7 +77,7 @@ class Ordv_Shipper_Checkout {
 
     }
 
-    public function add_checkout_fields( $fields ){
+    public function ordv_shipper_add_checkout_fields( $fields ){
 
         $fields['billing']['billing_address_1'] = array(
             'type'      => 'textarea',
@@ -163,12 +163,12 @@ class Ordv_Shipper_Checkout {
         return $fields;
     }
 
-    public function override_default_address_fields( $address_fields ) {
+    public function ordv_shipper_override_default_address_fields( $address_fields ) {
         $address_fields['state']['required'] = false;
         return $address_fields;
     }
 
-    public function load_checkout_scripts(){
+    public function ordv_shipper_load_checkout_scripts(){
 
         $style = '#billing_country_field, #shipping_country_field{ display: none !important; }';
         $style .= '#billing_delivery_option_field.radio {display: inline !important; margin-left: 5px;}';
@@ -203,7 +203,7 @@ class Ordv_Shipper_Checkout {
     }
 
 
-    public function get_data_area(){
+    public function ordv_shipper_get_data_area(){
 
         if ( wp_verify_nonce( $_GET['nonce'], 'ajax-nonce' ) ) {
 
@@ -213,7 +213,7 @@ class Ordv_Shipper_Checkout {
             
             if( $keyword ){
 
-                $get_data_area = get_list_area( $keyword );
+                $get_data_area = ordv_shipper_fn_get_list_area( $keyword );
 
                 foreach ($get_data_area as $key => $area) {
                     
@@ -238,7 +238,7 @@ class Ordv_Shipper_Checkout {
         }
     }
 
-    public function get_data_services(){
+    public function ordv_shipper_get_data_services(){
 
         if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
             die( 'Close The Door!');
@@ -269,9 +269,9 @@ class Ordv_Shipper_Checkout {
 
         }
 
-        $data_packages  = get_packages_data();
+        $data_packages  = ordv_shipper_fn_get_packages_data();
 
-        $data_list_kurir = get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_packages );
+        $data_list_kurir = ordv_shipper_fn_get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_packages );
 
         // set session data for add_rates
         WC()->session->set( 'data_kurir' , $data_list_kurir );
@@ -292,10 +292,10 @@ class Ordv_Shipper_Checkout {
     }
 
 
-    public function custom_shipping_package_name( $name ){
+    public function ordv_shipper_custom_shipping_package_name( $name ){
         
         $name           = 'Pengiriman';
-        $packages       = get_packages_data();
+        $packages       = ordv_shipper_fn_get_packages_data();
 
         $active_weight_unit     = get_option('woocommerce_weight_unit');
         $active_dimension_unit  = get_option('woocommerce_dimension_unit');
@@ -333,14 +333,14 @@ class Ordv_Shipper_Checkout {
 
     }
     
-    public function filter_cart_needs_shipping( $needs_shipping ) {
+    public function ordv_shipper_filter_cart_needs_shipping( $needs_shipping ) {
         if ( is_cart() ) {
             $needs_shipping = false;
         }
         return $needs_shipping;
     }
 
-    public function save_order_custom_meta_data(  $order, $data  ){
+    public function ordv_shipper_save_order_custom_meta_data(  $order, $data  ){
         
                 
         if ( isset( $_POST['shipping_method'][0] ) ){
@@ -362,7 +362,7 @@ class Ordv_Shipper_Checkout {
 
     }
 
-    public function shipper_additional_detail( $order ){
+    public function ordv_shipper_shipper_additional_detail( $order ){
 
         $status_tracking = get_post_meta( $order->get_id(), 'status_tracking', true );
         

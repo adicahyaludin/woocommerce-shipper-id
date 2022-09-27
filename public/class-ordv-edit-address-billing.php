@@ -55,7 +55,7 @@ class Ordv_Shipper_Edit_Address_Billing {
 	}
 
 
-    public function load_additonal_styles_scripts(){
+    public function ordv_shipper_load_additonal_styles_scripts(){
 
         global $wp;
         $current_url    = home_url(add_query_arg(array(),$wp->request));
@@ -79,7 +79,7 @@ class Ordv_Shipper_Edit_Address_Billing {
 
     }
 
-    public function edit_billing_add_field( $fields ){
+    public function ordv_shipper_edit_billing_add_field( $fields ){
 
         global $wp;
         $current_url    = home_url(add_query_arg(array(),$wp->request));
@@ -132,7 +132,7 @@ class Ordv_Shipper_Edit_Address_Billing {
     }
 
 
-    public function get_edit_data_area(){
+    public function ordv_shipper_get_edit_data_area(){
 
         if ( wp_verify_nonce( $_GET['nonce'], 'ajax-nonce' ) ) {
 
@@ -142,7 +142,7 @@ class Ordv_Shipper_Edit_Address_Billing {
             
             if( $keyword ){
 
-                $get_data_area = get_list_area( $keyword );
+                $get_data_area = ordv_shipper_fn_get_list_area( $keyword );
 
                 foreach ($get_data_area as $key => $area) {
                     
@@ -168,7 +168,7 @@ class Ordv_Shipper_Edit_Address_Billing {
 
     }
 
-    public function save_custom_billing_field_data( $user_id ){
+    public function ordv_shipper_save_custom_billing_field_data( $user_id ){
 
         $new_area_id = $_POST['billing_ordv-edit-billing-kelurahan'];
         $new_area_text = $_POST['billing_city'];
