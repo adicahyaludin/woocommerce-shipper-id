@@ -155,11 +155,6 @@ function ordv_shipper_fn_create_order_shipper( $order_id ){
     $data_api   = json_decode($body);
     $data       = $data_api->data;
 
-    // print_r(array(
-    //     json_decode($send_body),
-    //     $data_api
-    // ));
-
     return $data;
 
 }
