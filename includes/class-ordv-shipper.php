@@ -241,6 +241,7 @@ class Ordv_Shipper {
 		$this->loader->add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $plugin_check_awb, 'ordv_shipper_handle_order_number_custom_query_var', 10, 2 );
 		
 		$this->loader->add_action( 'wp_ajax_cek_resi_data',						$plugin_check_awb, 'ordv_shipper_cek_resi_data' );
+		$this->loader->add_action( 'wp_ajax_get_resi_detail',					$plugin_check_awb, 'ordv_shipper_get_resi_detail' );
 
 		$plugin_edit_address_billing = new Ordv_Shipper_Edit_Address_Billing( $this->get_plugin_name(), $this->get_version() );
 		$this->loader->add_action( 'wp_enqueue_scripts',					$plugin_edit_address_billing, 'ordv_shipper_load_additonal_styles_scripts' );

@@ -69,15 +69,20 @@ class Ordv_Shipper_Check_Awb {
 				'ajax_url'  => admin_url( 'admin-ajax.php' ),               
 				'cek_resi'      => [
 					'action'    => 'cek_resi_data',
+				],
+				'get_detail'	=> [
+					'action'	=> 'get_resi_detail',
+					'nonce'     => wp_create_nonce( 'ajax-nonce' )
 				]
 			);
 
 			wp_localize_script( 'cek-resi-script', 'cek_resi_ajax', $settings);
 
+			wp_enqueue_style( $this->plugin_name.'-bulma', 'https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css' );
+			wp_enqueue_style( $this->plugin_name.'-bulma-timeline', ORDV_SHIPPER_URI.'public/css/bulma-timeline.min.css' );
+			wp_enqueue_style( $this->plugin_name.'-check-awb', ORDV_SHIPPER_URI.'public/css/ordv-shipper-check-awb.css' );
+
 		}
-
-
-
 	}
 
     public function ordv_shipper_register_check_awb_endpoint(){
@@ -145,13 +150,13 @@ class Ordv_Shipper_Check_Awb {
 				if($order)
 				{
 					$order_id			= $order[0]->get_id();
-					$get_tracking_id	= get_post_meta($order_id, 'order_shipper_id', true);
+					$order_shipper_id	= get_post_meta($order_id, 'order_shipper_id', true);
 
 					// do ajax here
-					$detail_data = ordv_shipper_fn_detail_data_tracking( $get_tracking_id );					
+					$detail_data = ordv_shipper_fn_detail_data_tracking( $order_shipper_id );					
 
 					ob_start();
-					include ORDV_SHIPPER_PATH.'public/partials/check-awb/show-data.php';
+					include ORDV_SHIPPER_PATH.'public/partials/check-awb/show-hasil-data.php';
 					$set_data =  ob_get_clean();
 
 					$response = array(
@@ -187,6 +192,45 @@ class Ordv_Shipper_Check_Awb {
 			
 		}
 		
+	}
+
+	public function ordv_shipper_get_resi_detail(){
+		
+		if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
+            die( 'Close The Door!');
+        }
+
+		if( $_POST['i'] ){
+
+			$order_shipper_id = $_POST['i'];
+			$detail_data = ordv_shipper_fn_detail_data_tracking( $order_shipper_id );
+
+			ob_start();
+			include ORDV_SHIPPER_PATH.'public/partials/check-awb/show-detail-data.php';
+			$set_data =  ob_get_clean();
+
+			$response = array(
+				'status'	=> 1,
+				'content'	=> $set_data,
+				'notice'	=> 'Data Nomer Resi ditemukan.',
+				'class'		=> 'woocommerce-message',
+			);
+
+		}else{
+			
+
+			$response = array(
+				'status'	=> 0,					
+				'content'	=> '',
+				'notice'	=> 'Data tidak ditemukan.',
+				'class'		=> 'woocommerce-error',
+			);
+
+		}
+
+		wp_send_json($response);
+		wp_die();
+
 	}
 
 

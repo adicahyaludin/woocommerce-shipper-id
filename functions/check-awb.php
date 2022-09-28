@@ -20,19 +20,25 @@ function ordv_shipper_fn_detail_data_tracking( $order_shipper_id ){
 
     $body               = wp_remote_retrieve_body( $request );
     $data_api           = json_decode($body);
+    $data               = $data_api->data;
 
-    $data_tracking      = $data_api->data->trackings;
-    $n_data             = count($data_tracking);
-    $latest_data_n      = ($n_data - 1);
+    // ob_start();	
+    // echo var_dump($data_api);
+    // $a = 'test 123'.ob_get_clean();		
+    // error_log($a);
 
-    $latest_status = $data_tracking[$latest_data_n]->logistic_status->description;
+    // $data_tracking      = $data_api->data->trackings;
+    // $n_data             = count($data_tracking);
+    // $latest_data_n      = ($n_data - 1);
 
-    $data = array(
-        'awb_number'            => $data_api->data->awb_number,
-        'shipper_order_status'  => $data_api->data->is_active, // true or false
-        'pickup_code'           => $data_api->data->pickup_code,
-        'tracking_status'       => $latest_status
-    );
+    // $latest_status = $data_tracking[$latest_data_n]->logistic_status->description;
+
+    // $data = array(
+    //     'awb_number'            => $data_api->data->awb_number,
+    //     'shipper_order_status'  => $data_api->data->is_active, // true or false
+    //     'pickup_code'           => $data_api->data->pickup_code,
+    //     'tracking_status'       => $latest_status
+    // );
     
 
     return $data;

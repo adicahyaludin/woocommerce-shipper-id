@@ -8,7 +8,8 @@
 
         $('#notices-area').removeClass();
         $('#notices-area').html('');
-        $('#hasil-cek-resi').html('');
+        $('#hasil-data').html('');
+		$('#detail-paket').html('');
 
         var data = $(this).serialize();
 
@@ -20,10 +21,14 @@
                 'action' : cek_resi_ajax.cek_resi.action
             },
             dataType: 'json',
+			beforeSend: function() {
+				$('#hasil-data').html('<span style="color:red;">Checking data...</span>');
+			},
             success: function (data) {
+				$('#hasil-data').html('');
                 $('#notices-area').addClass(data.class).html(data.notice);
                 if(data.status == 1){
-                    $('#hasil-cek-resi').html(data.content);
+                    $('#hasil-data').html(data.content);
                 }else{
                     // do nothing
                 }
@@ -31,6 +36,36 @@
         });
 
     });
+
+	$(document).on('click','.detail-resi',function(e){
+		e.preventDefault();
+		
+		$('#detail-paket').html('');
+		var order_id = $(this).attr('data_order_id');
+
+		$.ajax({
+			type: 'POST',
+			url: cek_resi_ajax.ajax_url,
+			data: {
+				'i' : order_id,
+				'action' : cek_resi_ajax.get_detail.action,
+				'nonce' : cek_resi_ajax.get_detail.nonce
+
+			},
+			dataType: 'json',
+			beforeSend: function() {
+				$('#detail-paket').html('<span style="color:red;">Loading data...</span>');
+			},
+			success: function (data) {
+				$('#detail-paket').html('');
+				if(data.status == 1){
+                    $('#detail-paket').html(data.content);
+                }else{
+                    // do nothing
+                }
+			}
+		});
+	});
 
 	/**
 	 * All of the code for your public-facing JavaScript source
