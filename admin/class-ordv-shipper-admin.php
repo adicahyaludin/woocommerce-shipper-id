@@ -426,6 +426,7 @@ class Ordv_Shipper_Admin {
 				update_post_meta( $order_id, 'pickup_code', $get_pickup_data->pickup_code );
 				update_post_meta( $order_id, 'is_activate', $get_pickup_data->is_activate );
 				update_post_meta( $order_id, 'pickup_time', $get_pickup_data->pickup_time );
+				
 
 			}else{
 
