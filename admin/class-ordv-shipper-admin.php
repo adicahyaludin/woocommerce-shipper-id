@@ -289,7 +289,13 @@ class Ordv_Shipper_Admin {
 	}
 
 	/**
-	 *
+	 * ordv_shipper_custom_shop_order_column
+	 * 
+	 * Add additional column in list order in woocommerce > orders ( Admin dashboard )
+	 * 
+	 * @uses hooked via filter manage_edit-shop_order_columns 
+	 * @since 1.0.0
+	 * @param $columns
 	 */
 
 	public function ordv_shipper_custom_shop_order_column($columns)

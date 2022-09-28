@@ -140,6 +140,8 @@ class Ordv_Shipper {
 
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-ordv-edit-address-billing.php';
 
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-ordv-view-orders.php';
+
 		$this->loader = new Ordv_Shipper_Loader();
 
 	}
@@ -249,6 +251,11 @@ class Ordv_Shipper {
 		$this->loader->add_action( 'wp_ajax_get_edit_data_area',			$plugin_edit_address_billing, 'ordv_shipper_get_edit_data_area' );
 		$this->loader->add_action( 'woocommerce_customer_save_address', 	$plugin_edit_address_billing,'ordv_shipper_save_custom_billing_field_data');
 				
+		$plugin_view_order = new Ordv_Shipper_View_Order( $this->get_plugin_name(), $this->get_version() );
+
+		$this->loader->add_action( 'woocommerce_view_order', 			$plugin_view_order, 'ordv_shipper_add_style');
+		$this->loader->add_action( 'woocommerce_after_order_details',	$plugin_view_order, 'ordv_shipper_add_delivery_details' );
+
 	}
 
 	/**
