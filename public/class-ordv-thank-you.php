@@ -53,7 +53,14 @@ class Ordv_Shipper_Thankyou{
 		$this->version              = $version;
 	}
 
-	public function ordv_shipper_wc_register_guests(  $order_id ){
+	/**
+	 * Register new user when checkout if customer doesn't log in
+	 * Hooked via	action woocommerce_thankyou
+	 * @since		1.0.0
+	 * @param		$order_id
+	 * @return		void
+	 */
+	public function ordv_shipper_wc_register_guests( $order_id ){
 		
 		// get all the order data
 		$order = new WC_Order($order_id);

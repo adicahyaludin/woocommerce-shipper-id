@@ -10,13 +10,16 @@ add_action("admin_init", function(){
 });
 
 /**
- * 
+ * Create order shipper by order_id
+ * @uses    Ordv_Shipper_Admin::ordv_shipper_action_shipper_create_order
+ * @since   1.0.0
+ * @param   string  $order_id
+ * @return  mixed
  */
-
 function ordv_shipper_fn_create_order_shipper( $order_id ){
 
     $endpoint_create_order_shipper      = '/v3/order';
-    $endpoint_url_create_order_shipper  = API_URL.''.$endpoint_create_order_shipper;
+    $endpoint_url_create_order_shipper  = get_url_api().''.$endpoint_create_order_shipper;
 
     $api_key = carbon_get_theme_option('shipper_api_key');
 
@@ -44,18 +47,17 @@ function ordv_shipper_fn_create_order_shipper( $order_id ){
     foreach( $list_product as $item_id => $item_data ){
 
         // get data  product
-        $product   = $item_data->get_product();
-
-        $product_id = $item_data['product_id'];
-        $product_name = $item_data["name"];
-        $product_price = $product->get_price();
-        $product_qty = $item_data->get_quantity();
+        $product        = $item_data->get_product();
+        $product_id     = $item_data['product_id'];
+        $product_name   = $item_data["name"];
+        $product_price  = $product->get_price();
+        $product_qty    = $item_data->get_quantity();
 
         $list = array(
-            'id' =>  $product_id,
-            'name' => $product_name,
+            'id'    =>  $product_id,
+            'name'  => $product_name,
             'price' => intval( $product_price ),
-            'qty' => $product_qty
+            'qty'   => $product_qty
         );
 
         $items[] = $list;
@@ -107,7 +109,7 @@ function ordv_shipper_fn_create_order_shipper( $order_id ){
     $height = 0;
     $length = 0;
     $weight = 0;
-    $width = 0;
+    $width  = 0;
     $package_type = 2;
     $price = 0; // total price package
 
@@ -184,10 +186,17 @@ function ordv_shipper_fn_create_order_shipper( $order_id ){
 
 }
 
+/**
+ * Get detail order shipper data by $order_shipper_id
+ * @since   1.0.0
+ * @uses    admin/partials/order/order-column.php
+ * @param   int     $order_shipper_id
+ * @return  void
+ */
 function ordv_shipper_fn_get_shipper_order_data( $order_shipper_id ){
 
     $endpoint_get_data_shipper      = '/v3/order/'.$order_shipper_id;
-    $endpoint_url_get_data_shipper  = API_URL.''.$endpoint_get_data_shipper;
+    $endpoint_url_get_data_shipper  = get_url_api().''.$endpoint_get_data_shipper;
 
     $api_key = carbon_get_theme_option('shipper_api_key');
 
@@ -203,14 +212,14 @@ function ordv_shipper_fn_get_shipper_order_data( $order_shipper_id ){
         $args
     );
 
-    $body               = wp_remote_retrieve_body( $request );
-    $data_api           = json_decode($body);
+    $body           = wp_remote_retrieve_body( $request );
+    $data_api       = json_decode($body);
 
-    $data_tracking      = $data_api->data->trackings;
-    $n_data             = count($data_tracking);
-    $latest_data_n      = ($n_data - 1);
+    $data_tracking  = $data_api->data->trackings;
+    $n_data         = count($data_tracking);
+    $latest_data_n  = ($n_data - 1);
 
-    $latest_status = $data_tracking[$latest_data_n]->shipper_status->description;
+    $latest_status  = $data_tracking[$latest_data_n]->shipper_status->description;
 
     $data = array(
         'awb_number'            => $data_api->data->awb_number,
@@ -224,6 +233,12 @@ function ordv_shipper_fn_get_shipper_order_data( $order_shipper_id ){
 
 }
 
+/**
+ * Get data pickup time from shipper
+ * @since   1.0.0
+ * @uses    admin/partials/order/time-slots.php
+ * @return  mixed
+ */
 function ordv_shipper_fn_get_pickup_time(){
 
     date_default_timezone_set('Asia/Jakarta');
@@ -237,7 +252,7 @@ function ordv_shipper_fn_get_pickup_time(){
 
 
     $endpoint_get_time_slot      = '/v3/pickup/timeslot';
-    $endpoint_url_get_time_slot  = API_URL.''.$endpoint_get_time_slot;
+    $endpoint_url_get_time_slot  = get_url_api().''.$endpoint_get_time_slot;
 
     $api_url = add_query_arg( array(
         'time_zone'     => urlencode($date_time_zone),
@@ -248,8 +263,8 @@ function ordv_shipper_fn_get_pickup_time(){
 
     $args = array(
         'headers' => array(
-            'Content-Type' => 'application/json',
-            'X-Api-Key' => $api_key
+            'Content-Type'  => 'application/json',
+            'X-Api-Key'     => $api_key
         )
     );
 
@@ -260,16 +275,24 @@ function ordv_shipper_fn_get_pickup_time(){
 
     $body       = wp_remote_retrieve_body( $request );
     $data_api   = json_decode($body);
-
-    $slot_time = $data_api->data->time_slots;
+    $slot_time  = $data_api->data->time_slots;
 
     return $slot_time;
 }
 
+/**
+ * Run process pickup order after picked time
+ * @since   1.0.0
+ * @uses    Ordv_Shipper_Admin::ordv_shipper_action_set_pickup_time
+ * @param   string  $id_shipper_order
+ * @param   string  $date_start
+ * @param   string  date_end
+ * @return  mixed
+ */
 function ordv_shipper_fn_do_pickup_order( $id_shipper_order, $date_start, $date_end ){
 
     $endpoint_do_pickup_order      = '/v3/pickup/timeslot';
-    $endpoint_url_do_pickup_order  = API_URL.''.$endpoint_do_pickup_order;
+    $endpoint_url_do_pickup_order  = get_url_api().''.$endpoint_do_pickup_order;
 
     $api_key = carbon_get_theme_option('shipper_api_key');
 
@@ -286,7 +309,6 @@ function ordv_shipper_fn_do_pickup_order( $id_shipper_order, $date_start, $date_
         )
 
     );
-
 
     $body = wp_json_encode( $body );
 
@@ -312,12 +334,19 @@ function ordv_shipper_fn_do_pickup_order( $id_shipper_order, $date_start, $date_
 
 }
 
+/**
+ * Get delivery status from shipper
+ * @since   1.0.0
+ * @uses    Ordv_Shipper_Admin::ordv_shipper_get_data_status
+ * @param   int     $order_id
+ * @return  void
+ */
 function ordv_shipper_fn_get_updated_status( $order_id ){
 
     $order_shipper_id = get_post_meta($order_id, 'order_shipper_id', true);
 
     $endpoint_get_status      = '/v3/order/'.$order_shipper_id;
-    $endpoint_url_get_status  = API_URL.''.$endpoint_get_status;
+    $endpoint_url_get_status  = get_url_api().''.$endpoint_get_status;
 
     $api_key = carbon_get_theme_option('shipper_api_key');
 

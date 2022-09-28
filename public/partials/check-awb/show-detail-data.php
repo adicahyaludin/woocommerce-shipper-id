@@ -22,7 +22,7 @@
                                 <div class="timeline-content">
                                     <?php 
                                         $str_time = $data->created_date; 
-                                        $str_time = substr($str_time, 0, -1);
+                                        $str_time = substr( $str_time, 0, 19 );
                                         $str_time = str_replace('T', ',', $str_time);
                                         echo $str_time;
                                     ?>
@@ -30,12 +30,14 @@
                             </div>                                                
                         </td>
                         <td>
-                            <p>
-                                <?php echo $data->shipper_status->description; ?>
+                            <p style="font-size:13px;">
+                                <?php
+                                    echo $data->shipper_status->description; 
+                                ?>
                             </p>
                         </td>
                         <td>
-                            <p>
+                            <p style="font-size:13px;">
                                 <?php echo $data->logistic_status->description; ?>
                             </p>
                         </td>

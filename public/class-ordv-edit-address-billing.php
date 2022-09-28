@@ -54,7 +54,12 @@ class Ordv_Shipper_Edit_Address_Billing {
 
 	}
 
-
+    /**
+     * Add custom css & js in edit-address/billing
+     * Hooked via   action wp_enqueue_scripts
+     * @since       1.0.0
+     * @return      void
+     */
     public function ordv_shipper_load_additonal_styles_scripts(){
 
         global $wp;
@@ -76,9 +81,16 @@ class Ordv_Shipper_Edit_Address_Billing {
             
             wp_enqueue_style( $this->plugin_name, plugin_dir_url( __DIR__ ). 'public/css/ordv-shipper-edit-address-billing.css' );
         }
-
     }
 
+
+    /**
+     * Add "kelurahan" field in edit-address/billing
+     * Hooked via   filter woocommerce_default_address_fields
+     * @since       1.0.0
+     * @param       $fields
+     * @return      void
+     */
     public function ordv_shipper_edit_billing_add_field( $fields ){
 
         global $wp;
@@ -132,6 +144,12 @@ class Ordv_Shipper_Edit_Address_Billing {
     }
 
 
+    /**
+     * Get list data area for "kelurahan" dropdown option in edit-address/billing
+     * Hooked via   action wp_ajax_get_edit_data_area
+     * @since       1.0.0
+     * @return      void
+     */
     public function ordv_shipper_get_edit_data_area(){
 
         if ( wp_verify_nonce( $_GET['nonce'], 'ajax-nonce' ) ) {
@@ -168,6 +186,14 @@ class Ordv_Shipper_Edit_Address_Billing {
 
     }
 
+    /**
+     * Save area_id & area_text from edit-address/billing
+     * Hooked via   action woocommerce_customer_save_address
+     * @since       1.0.0
+     * @param       $user_id
+     * @return      void
+     */
+    
     public function ordv_shipper_save_custom_billing_field_data( $user_id ){
 
         $new_area_id = $_POST['billing_ordv-edit-billing-kelurahan'];

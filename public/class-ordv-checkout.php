@@ -55,6 +55,13 @@ class Ordv_Shipper_Checkout {
 
 	}
 
+    /**
+     * Change province name to adjust woocommerce and shipper
+     * Hooked via   filter woocommerce_states
+     * @since       1.0.0
+     * @param       array $states
+     * @return      void
+     */
     public function ordv_shipper_change_province_name( $states ){
         
         $states['ID']['AC'] = 'Aceh';
@@ -64,6 +71,13 @@ class Ordv_Shipper_Checkout {
         
     }
 	
+    /**
+     * Remove unecesarry fied in checkout page
+     * Hooked via   Filter woocommerce_checkout_fields
+     * @since       1.0.0
+     * @param       $fields
+     * @return      void
+     */
     public function ordv_shipper_remove_checkout_field( $fields ){
         
         unset($fields['billing']['billing_company']);           // remove company field
@@ -77,6 +91,13 @@ class Ordv_Shipper_Checkout {
 
     }
 
+    /**
+     * Add custom field in checkout page
+     * Hooked via   filter woocommerce_checkout_fields priority 15
+     * @since       1.0.0
+     * @param       $fields
+     * @return      void
+     */
     public function ordv_shipper_add_checkout_fields( $fields ){
 
         $fields['billing']['billing_address_1'] = array(
@@ -87,19 +108,16 @@ class Ordv_Shipper_Checkout {
             'class'     => array('form-row-wide'),
             'clear'     => true,
             'priority'  => 35
-         );
-
+        );
 
         if ( is_user_logged_in() ) {
 
             $user_id = get_current_user_id();
 
-
             $user_order_area_id = get_user_meta( $user_id, 'user_order_area_id', true );
             $user_order_area_text = get_user_meta( $user_id, 'user_order_area_text', true );
             $user_order_area_lat = get_user_meta( $user_id, 'user_order_area_lat', true );
             $user_order_area_lng = get_user_meta( $user_id, 'user_order_area_lng', true );
-
             
             if( $user_order_area_id && $user_order_area_text ){
 
@@ -118,7 +136,6 @@ class Ordv_Shipper_Checkout {
 
                 $fields['billing']['ordv-area']['data-lat'] = $user_order_area_lat;
                 $fields['billing']['ordv-area']['data-lng'] = $user_order_area_lng;
-
 
             }else{
 
@@ -163,11 +180,24 @@ class Ordv_Shipper_Checkout {
         return $fields;
     }
 
+    /**
+     * Remove required state field
+     * Hooked via   filter woocommerce_default_address_fields Priority 999
+     * @since       1.0.0
+     * @param       $address_fields
+     * @return      void
+     */
     public function ordv_shipper_override_default_address_fields( $address_fields ) {
         $address_fields['state']['required'] = false;
         return $address_fields;
     }
 
+    /**
+     * Load scripts only in checkout page
+     * Hooked via   action woocommerce_checkout_billing
+     * @since       1.0.0
+     * @return      void
+     */
     public function ordv_shipper_load_checkout_scripts(){
 
         $style = '#billing_country_field, #shipping_country_field{ display: none !important; }';
@@ -202,7 +232,12 @@ class Ordv_Shipper_Checkout {
         }        
     }
 
-
+    /**
+     * Get list "kelurahan" data for checkout page
+     * Hooked via   add_action wp_ajax_get_data_area
+     * @since       1.0.0
+     * @return      void
+     */
     public function ordv_shipper_get_data_area(){
 
         if ( wp_verify_nonce( $_GET['nonce'], 'ajax-nonce' ) ) {
@@ -238,6 +273,13 @@ class Ordv_Shipper_Checkout {
         }
     }
 
+    /**
+     * Get list "kurir" and cost
+     * @uses    Hooked add_action wp_ajax_get_data_services_first_time
+     * @uses    Hooked add_action wp_ajax_get_data_services
+     * @since   1.0.0
+     * @return  void
+     */
     public function ordv_shipper_get_data_services(){
 
         if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
@@ -285,13 +327,23 @@ class Ordv_Shipper_Checkout {
         // save data for session
         WC()->session->set( 'data_area' , $data );
 
-        $result = 'ok';
+        //$result = 'ok';
+        $result = array(
+            'success'   => true,
+            'message'   => 'ok'
+        );
         wp_send_json( $result );
         wp_die();
 
     }
 
-
+    /**
+     * Display package detail data in sidebar of checkout page
+     * Hooked via   filter woocommerce_shipping_package_name Priority 10
+     * @since       1.0.0
+     * @param       $name
+     * @return      void
+     */
     public function ordv_shipper_custom_shipping_package_name( $name ){
         
         $name           = 'Pengiriman';
@@ -314,7 +366,14 @@ class Ordv_Shipper_Checkout {
         return $name;
         
     }
-
+    
+    /**
+     * Update order review
+     * Hooked via -
+     * @since 1.0.0
+     * @param $posted_data
+     * @return void
+     */
     public function update_order_review( $posted_data ){
         
         // Parsing posted data on checkout
@@ -333,6 +392,13 @@ class Ordv_Shipper_Checkout {
 
     }
     
+    /**
+     * Remove Shipping option data in cart page
+     * Hooked via   filter woocommerce_cart_needs_shipping
+     * @since       1.0.0
+     * @param       $needs_shipping
+     * @return      void
+     */
     public function ordv_shipper_filter_cart_needs_shipping( $needs_shipping ) {
         if ( is_cart() ) {
             $needs_shipping = false;
@@ -340,6 +406,14 @@ class Ordv_Shipper_Checkout {
         return $needs_shipping;
     }
 
+    /**
+     * Save order custom field data when create order
+     * Hooked via   action woocommerce_checkout_create_order
+     * @since       1.0.0
+     * @param       $order
+     * @param       $data
+     * @return      void
+     */
     public function ordv_shipper_save_order_custom_meta_data(  $order, $data  ){
         
                 
@@ -362,6 +436,13 @@ class Ordv_Shipper_Checkout {
 
     }
 
+    /**
+     * Replace '[receiver_name]' with customer name
+     * Hooked via   action ordv_shipper_shipper_additional_detail
+     * @since       1.0.0
+     * @param       $order
+     * @return      void
+     */
     public function ordv_shipper_shipper_additional_detail( $order ){
 
         $status_tracking = get_post_meta( $order->get_id(), 'status_tracking', true );

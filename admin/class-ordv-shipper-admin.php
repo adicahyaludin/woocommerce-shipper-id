@@ -59,9 +59,9 @@ class Ordv_Shipper_Admin {
 
 	/**
 	 * Enqueue scripts
-	 * Hooked via action admin_enqueue_scripts, priority 10
-	 * @since 	1.0.0
-	 * @return 	void
+	 * Hooked via	action admin_enqueue_scripts, priority 10
+	 * @since 		1.0.0
+	 * @return 		void
 	 */
 	public function ordv_shipper_enqueue_scripts() {
 
@@ -109,9 +109,9 @@ class Ordv_Shipper_Admin {
 
 	/**
 	 * Enqueue styles
-	 * Hooked via action admin_enqueue_scripts, priority 10
-	 * @since 	1.0.0
-	 * @return 	void
+	 * Hooked via	action admin_enqueue_scripts, priority 10
+	 * @since		1.0.0
+	 * @return		void
 	 */
 	public function ordv_shipper_enqueue_styles() {
 
@@ -128,8 +128,8 @@ class Ordv_Shipper_Admin {
 
 	/**
 	 * Load carbon field library
-	 * Hooked via action after_setup_theme, priority 10
-	 * @since 	1.0.0
+	 * @uses	add_action after_setup_theme priority 10
+	 * @since	1.0.0
 	 * @return 	void
 	 */
 	public function ordv_shipper_load_carbon_fields() {
@@ -156,9 +156,9 @@ class Ordv_Shipper_Admin {
 
 	/**
 	 * Add plugin options
-	 * Hooked via action carbon_fields_register_fields, priority 10
-	 * @since 	1.0.0
-	 * @return 	void
+	 * Hooked via	action carbon_fields_register_fields, priority 10
+	 * @since 		1.0.0
+	 * @return 		void
 	 */
 	public function ordv_shipper_add_plugin_options() {
 
@@ -179,9 +179,9 @@ class Ordv_Shipper_Admin {
 
 	/**
 	 * Add location options based on product attribute selected on plugin options
-	 * Hooekd via action carbon_fields_register_fields, priority 10
-	 * @since 	1.0.0
-	 * @return 	void
+	 * Hooekd via	action carbon_fields_register_fields, priority 10
+	 * @since 		1.0.0
+	 * @return 		void
 	 */
 	public function ordv_shipper_add_location_options() {
 
@@ -217,10 +217,10 @@ class Ordv_Shipper_Admin {
 
 	/**
 	 * Add custom shipping method
-	 * Hooked via filter woocommerce_shipping_methods
-	 * @since 	1.0.0
-	 * @param  	array 	$methods
-	 * @return 	array
+	 * Hooked via	filter	woocommerce_shipping_methods
+	 * @since 		1.0.0
+	 * @param  		array 	$methods
+	 * @return 		array
 	 */
 	public function ordv_shipper_modify_shipping_methods( $methods ) {
 
@@ -233,8 +233,8 @@ class Ordv_Shipper_Admin {
 
 	/**
 	 * get_locations_by_ajax
-	 * hooked via action wp_ajax_get-locations, priority 10
-	 * @return json
+	 * hooked via	action	wp_ajax_get-locations, priority 10
+	 * @return		json
 	 */
 	public function ordv_shipper_get_locations_by_ajax() {
 
@@ -274,8 +274,8 @@ class Ordv_Shipper_Admin {
 
 	/**
 	 * save custom term meta
-	 * hooked via action carbon_fields_term_meta_container_saved, priority 10
-	 * @return void
+	 * hooked via	action carbon_fields_term_meta_container_saved, priority 10
+	 * @return		void
 	 */
 	public function ordv_shipper_save_custom_term_meta_area() {
 
@@ -289,15 +289,12 @@ class Ordv_Shipper_Admin {
 	}
 
 	/**
-	 * ordv_shipper_custom_shop_order_column
-	 * 
 	 * Add additional column in list order in woocommerce > orders ( Admin dashboard )
-	 * 
-	 * @uses hooked via filter manage_edit-shop_order_columns 
-	 * @since 1.0.0
-	 * @param $columns
+	 * Hooked via	filter manage_edit-shop_order_columns 
+	 * @since		1.0.0
+	 * @param		$columns
+	 * @return		void
 	 */
-
 	public function ordv_shipper_custom_shop_order_column($columns)
 	{
 		$reordered_columns = array();
@@ -313,9 +310,14 @@ class Ordv_Shipper_Admin {
 		return $reordered_columns;
 	}
 
-
-	// Adding custom fields meta data for each new column (example)
-
+	/**
+	 * Show new column in the end of order table in woocommerce > orders
+	 * hooked via	action manage_shop_order_posts_custom_column, priority 20
+	 * @since		1.0.0
+	 * @param		$column
+	 * @param		$post_id
+	 * @return		void
+	 */
 	public function ordv_shipper_custom_orders_list_column_content( $column, $post_id )
 	{
 		switch ( $column )
@@ -330,6 +332,12 @@ class Ordv_Shipper_Admin {
 		}
 	}
 
+	/**
+	 * Create order shipper.id
+	 * Hooked via	action wp_ajax_shipper_create_order
+	 * @since		1.0.0
+	 * @return		void
+	 */
 	public function ordv_shipper_action_shipper_create_order(){
 
 		if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
@@ -352,7 +360,12 @@ class Ordv_Shipper_Admin {
 			$order->save();
 		}
 
-		$result = 'ok';
+		//$result = 'ok';
+		$result = array(
+			'success'	=> true,
+			'data'		=> 'ok'
+		);
+
 		wp_send_json( $result );
 		wp_die();
 
@@ -360,6 +373,12 @@ class Ordv_Shipper_Admin {
 	}
 
 
+	/**
+	 * Show modal pickup time option
+	 * Hooked via	filter admin_footer-edit.php
+	 * @since		1.0.0
+	 * @return		void
+	 */
 	public function ordv_shipper_set_pickup_time_form(){
 
 		$currentScreen = get_current_screen();
@@ -378,7 +397,12 @@ class Ordv_Shipper_Admin {
 
 	}
 
-
+	/**
+	 * Set pickup time after choose "date & time" options
+	 * Hooked via	action wp_ajax_set_pickup_time
+	 * @since		1.0.0
+	 * @return		void
+	 */
 	public function ordv_shipper_action_set_pickup_time(){
 
 		if(isset($_POST['data']))
@@ -392,23 +416,16 @@ class Ordv_Shipper_Admin {
 
 				$id_shipper_order = get_post_meta($order_id, 'order_shipper_id', true);
 
-					$data = explode("|" , $data_time );
-					$date_start = $data[0];
-					$date_end	= $data[1];
+				$data = explode("|" , $data_time );
+				$date_start = $data[0];
+				$date_end	= $data[1];
 
-					$get_pickup_data = ordv_shipper_fn_do_pickup_order( $id_shipper_order, $date_start, $date_end );
+				$get_pickup_data = ordv_shipper_fn_do_pickup_order( $id_shipper_order, $date_start, $date_end );
 
-					// save pickup data
-					update_post_meta( $order_id, 'pickup_code', $get_pickup_data->pickup_code );
-					update_post_meta( $order_id, 'is_activate', $get_pickup_data->is_activate );
-					update_post_meta( $order_id, 'pickup_time', $get_pickup_data->pickup_time );
-
-					// $order = wc_get_order( $order_id );
-
-					// if( $order->has_status( 'waiting-delivery' ) ) {
-					// 	$order->update_status('wc-in-shipping');
-					// 	$order->save();
-					// }
+				// save pickup data
+				update_post_meta( $order_id, 'pickup_code', $get_pickup_data->pickup_code );
+				update_post_meta( $order_id, 'is_activate', $get_pickup_data->is_activate );
+				update_post_meta( $order_id, 'pickup_time', $get_pickup_data->pickup_time );
 
 			}else{
 
@@ -422,12 +439,22 @@ class Ordv_Shipper_Admin {
 
 		}
 
-		$result = 'ok';
+		$result = array(
+			'success' => true,
+			'message' => 'ok'
+		);
+
 		wp_send_json( $result );
 		wp_die();
 
 	}
 
+	/**
+	 * Get Latest shipper order status
+	 * Hooked via	action wp_ajax_get_data_status
+	 * @since		1.0.0
+	 * @return		void
+	 */
 	public function ordv_shipper_get_data_status(){
 
 		if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
@@ -445,7 +472,7 @@ class Ordv_Shipper_Admin {
 
 		$order = wc_get_order( $order_id );
 
-		if( 1190 === $data_order_code || 1180 === $data_order_code || 1170 === $data_order_code ){
+		if( 1190 === $data_order_code || 1180 === $data_order_code || 1170 === $data_order_code || 1160 === $data_order_code ){
 
 			$order->update_status('wc-in-shipping');
         	$order->save();
@@ -469,6 +496,12 @@ class Ordv_Shipper_Admin {
 
 	}
 
+	/**
+	 * Get list of time slot for picking order 
+	 * Hooked via	action wp_ajax_get_time_slots
+	 * @since		1.0.0 
+	 * @return		void
+	 */
 	public function ordv_shipper_get_time_slots(){
 
 		if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
@@ -485,6 +518,12 @@ class Ordv_Shipper_Admin {
 
 	}
 
+	/**
+	 * Add woocommerce custom order status : waiting for delivery & in shipping
+	 * Hooked via	action init
+	 * @since		1.0.0
+	 * @return		void
+	 */
 	public function ordv_shipper_register_custom_shipping_status(){
 		register_post_status(
 			'wc-waiting-delivery',
@@ -512,6 +551,13 @@ class Ordv_Shipper_Admin {
 
 	}
 
+	/**
+	 * Add status "waiting delivery" & "in shipping" in label above order table
+	 * Hooked via	filter wc_order_statuses
+	 * @since		1.0.0
+	 * @param		$order_statuses
+	 * @return		void
+	 */
 	public function ordv_shipper_shipper_add_status_to_list( $order_statuses ){
 
 		$new = array();
@@ -528,28 +574,6 @@ class Ordv_Shipper_Admin {
 		}
 
 		return $new;
-
-	}
-
-	public function get_check_code(){
-
-		if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
-            die( 'Close The Door!');
-        }
-
-		$order_id = $_POST['i'];
-
-		$test_code = get_post_meta( $order_id, 'test_code', true );
-
-		if( !$test_code){
-
-			update_post_meta( $order_id, 'test_code', 1 );
-
-		}else{
-			// do nothing
-		}
-		wp_send_json('ok');
-		wp_die();
 
 	}
 

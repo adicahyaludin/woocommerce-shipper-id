@@ -55,34 +55,34 @@ class Ordv_Shipper_View_Order{
 	}
     
     /**
-     * Ordv_shipper_add_style
-     * 
      * Add custom style for view order in my account
-     * 
-     * Hooked via woocommerce_view_order
-     * @since 1.0.0
-     * @return void
+     * Hooked via   woocommerce_view_order 
+     * @since       1.0.0
+     * @return      void
      */
-    public function ordv_shipper_add_style(){            
+    public function ordv_shipper_add_style(){
             
-			wp_enqueue_style( $this->plugin_name.'-bulma-timeline', ORDV_SHIPPER_URI.'public/css/bulma-timeline.min.css' );
-			wp_enqueue_style( $this->plugin_name.'-view-order', ORDV_SHIPPER_URI.'public/css/ordv-shipper-view-order.css' );
+        wp_enqueue_style( $this->plugin_name.'-bulma-timeline', ORDV_SHIPPER_URI.'public/css/bulma-timeline.min.css' );
+        wp_enqueue_style( $this->plugin_name.'-view-order', ORDV_SHIPPER_URI.'public/css/ordv-shipper-view-order.css' );
 
     }
 
+    /**     
+     * Get & display delivery details data in view order page
+     * Hooked via   action woocommerce_after_order_details
+     * @since       1.0.0
+     * @param       $order
+     * @return      void
+     */
     public function ordv_shipper_add_delivery_details( $order ){
         
         $order_id           = $order->get_id();
-        $order_shipper_id   = get_post_meta( $order_id, 'order_shipper_id', true );
-        $no_resi            = get_post_meta( $order_id, 'no_resi', true );
-
-        if( !$no_resi ){
-            $no_resi = NULL;
-        }
+        $order_shipper_id   = get_post_meta( $order_id, 'order_shipper_id', true );        
 
         if( $order_shipper_id ){
 
             $detail_data = ordv_shipper_fn_detail_data_tracking( $order_shipper_id );
+            $update_data = ordv_shipper_fn_update_data_tracking( $order_id, $detail_data );
 
 			ob_start();
             include ORDV_SHIPPER_PATH.'public/partials/view-order/show-order-hasil-data.php';

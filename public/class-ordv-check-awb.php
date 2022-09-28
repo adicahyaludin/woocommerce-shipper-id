@@ -55,11 +55,11 @@ class Ordv_Shipper_Check_Awb {
 	}
 
     /**
-     * Register New Endpoint For Check Resi.
-     *
-     * @return void.
+     * Register Scripts & Styles in check-awb page
+	 * Hooked via	action wp_enqueue_scripts
+	 * @since 		1.0.0
+	 * @return 		void
      */
-
 	public function ordv_shipper_cek_resi_scripts_load(){
 
 		if( ordv_shipper_fn_is_wc_endpoint( 'check-awb') ){
@@ -85,20 +85,49 @@ class Ordv_Shipper_Check_Awb {
 		}
 	}
 
+	/**
+	 * Register New endpoint for check awb page
+	 * Hooked via	action init
+	 * @since 		1.0.0
+	 * @return 		void
+	 */
     public function ordv_shipper_register_check_awb_endpoint(){
         add_rewrite_endpoint( 'check-awb', EP_ROOT | EP_PAGES );
     }
 
+
+	/**
+	 * Query vars for check awb page
+	 * Hooked via	filter query_vars
+	 * @since 		1.0.0
+	 * @param 		$vars
+	 * @return 		void
+	 */
     public function ordv_shipper_check_awb_query_vars( $vars ){
         $vars[] = 'check-awb';
 	    return $vars;
     }
-
+	
+	/**
+	 * Add tab to myaccount page 
+	 * Hooked via	filter woocommerce_account_menu_items
+	 * @since 		1.0.0
+	 * @param 		$items
+	 * @return 		void
+	 */
     public function ordv_shipper_add_check_awb_tab( $items ){
         $items['check-awb'] = 'Cek Resi';
 	    return $items;
     }
 
+
+	/**
+	 * Re-order tab menu in my account page woocommerce
+	 * Hooked via	filter woocommerce_account_menu_items 
+	 * @since 		1.0.0
+	 * @param 		array $items
+	 * @return 		void
+	 */
     public function ordv_shipper_reorder_account_menu( $items ){
         return array(
 	        'dashboard'          => __( 'Dashboard', 'woocommerce' ),
@@ -111,6 +140,12 @@ class Ordv_Shipper_Check_Awb {
         );
     }
 
+	/**
+	 * Template for check awb page
+	 * Hooked via	action woocommerce_account_check-awb_endpoint
+	 * @since 		1.0.0
+	 * @return 		void
+	 */
     public function ordv_shipper_add_check_awb_content(){
 
         ob_start();
@@ -119,6 +154,14 @@ class Ordv_Shipper_Check_Awb {
 
     }
 
+	/**
+	 * Handle query order number by using 'no_resi'
+	 * Hooked via	filter woocommerce_order_data_store_cpt_get_orders_query
+	 * @since 		1.0.0
+	 * @param 		$query
+	 * @param 		$query_vars
+	 * @return 		void
+	 */
     public function ordv_shipper_handle_order_number_custom_query_var( $query, $query_vars ){
         
         if ( ! empty( $query_vars['no_resi'] ) ) {
@@ -131,6 +174,12 @@ class Ordv_Shipper_Check_Awb {
         return $query;
     }
 
+	/**
+	 * Check AWB / No Resi data
+	 * Hooked via	action wp_ajax_cek_resi_data
+	 * @since 		1.0.0
+	 * @return 		void
+	 */
 	public function ordv_shipper_cek_resi_data(){
 
 		if(isset($_POST['data']))
@@ -194,6 +243,12 @@ class Ordv_Shipper_Check_Awb {
 		
 	}
 
+	/**
+	 * Get detail delivery status for timeline view in check awb page
+	 * Hooked via	action wp_ajax_get_resi_detail
+	 * @since 		1.0.0
+	 * @return 		void
+	 */
 	public function ordv_shipper_get_resi_detail(){
 		
 		if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
@@ -216,8 +271,7 @@ class Ordv_Shipper_Check_Awb {
 				'class'		=> 'woocommerce-message',
 			);
 
-		}else{
-			
+		}else{			
 
 			$response = array(
 				'status'	=> 0,					

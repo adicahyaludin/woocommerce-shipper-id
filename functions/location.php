@@ -7,7 +7,7 @@ function ordv_shipper_get_locations( $search = '' ) {
     $api_url = add_query_arg( array(
         'adm_level' => 5,
         'keyword'   => $search,
-    ), 'https://merchant-api-sandbox.shipper.id/v3/location' );
+    ), get_url_api().'/v3/location' );
     $api_key = carbon_get_theme_option('shipper_api_key');
 
     $args = array(

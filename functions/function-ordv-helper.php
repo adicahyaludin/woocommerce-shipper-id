@@ -1,10 +1,17 @@
 <?php
 
-
+/**
+ * Get list area from shipper
+ * @uses    Ordv_Shipper_Checkout::ordv_shipper_get_data_area
+ * @uses    Ordv_Shipper_Edit_Address_Billing::ordv_shipper_get_edit_data_area
+ * @since   1.0.0
+ * @param   string  $keyword
+ * @return  void
+ */
 function ordv_shipper_fn_get_list_area( $keyword ){
 
     $endpoint_listarea = '/v3/location?adm_level=5&keyword='.$keyword;
-    $api_url_listarea = API_URL.''.$endpoint_listarea;
+    $api_url_listarea = get_url_api().''.$endpoint_listarea;
     $api_key = carbon_get_theme_option('shipper_api_key');
 
     $args = array(
@@ -26,6 +33,13 @@ function ordv_shipper_fn_get_list_area( $keyword ){
 
 }
 
+/**
+ * Get detail Package order data
+ * @uses    Ordv_Shipper_Checkout::ordv_shipper_get_data_services
+ * @uses    Ordv_Shipper_Checkout::ordv_shipper_custom_shipping_package_name
+ * @since   1.0.0
+ * @return  void
+ */
 function ordv_shipper_fn_get_packages_data(){    
         
     $data = array();
@@ -95,6 +109,16 @@ function ordv_shipper_fn_get_packages_data(){
     return $data;
 }
 
+/**
+ * Get data list kurir 
+ * @since   1.0.0
+ * @uses    Ordv_Shipper_Checkout::ordv_shipper_get_data_services
+ * @param   int     $api_d_area_id
+ * @param   int     $area_id_lat
+ * @param   int     $area_id_lng
+ * @param   array   $data_packages
+ * @return  void
+ */
 function ordv_shipper_fn_get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_packages ){
 
     // add filter weight ( in gr ) and lenght ( in cm )    
@@ -170,20 +194,20 @@ function ordv_shipper_fn_get_data_list_kurir( $api_d_area_id, $area_id_lat, $are
 
     //set endpoint url
     $endpoint_kurir_instant = '/v3/pricing/domestic/instant?limit=500';
-    $endpoint_url_instant   = API_URL.''.$endpoint_kurir_instant;  
+    $endpoint_url_instant   = get_url_api().''.$endpoint_kurir_instant;  
 
     $endpoint_kurir_regular = '/v3/pricing/domestic/regular?limit=500';
-    $endpoint_url_regular   = API_URL.''.$endpoint_kurir_regular;
+    $endpoint_url_regular   = get_url_api().''.$endpoint_kurir_regular;
 
     $endpoint_kurir_express = '/v3/pricing/domestic/express?limit=500';
-    $endpoint_url_express   = API_URL.''.$endpoint_kurir_express;
+    $endpoint_url_express   = get_url_api().''.$endpoint_kurir_express;
 
 
     $endpoint_kurir_trucking = '/v3/pricing/domestic/trucking?limit=500';
-    $endpoint_url_trucking   = API_URL.''.$endpoint_kurir_trucking;
+    $endpoint_url_trucking   = get_url_api().''.$endpoint_kurir_trucking;
 
     $endpoint_kurir_same_day = '/v3/pricing/domestic/same-day?limit=500';
-    $endpoint_url_same_day   = API_URL.''.$endpoint_kurir_same_day;
+    $endpoint_url_same_day   = get_url_api().''.$endpoint_kurir_same_day;
     
     $api_key = carbon_get_theme_option('shipper_api_key');  
 
@@ -366,7 +390,13 @@ function ordv_shipper_fn_get_data_list_kurir( $api_d_area_id, $area_id_lat, $are
 
 }
 
-
+/**
+ * Get detailed data my account page url endpoint data
+ * @uses    Ordv_Shipper_Check_Awb::ordv_shipper_cek_resi_scripts_load
+ * @since   1.0.0
+ * @param   $endpoint
+ * @return  void
+ */
 function ordv_shipper_fn_is_wc_endpoint($endpoint) {
     // Use the default WC function if the $endpoint is not provided
     if (empty($endpoint)) return is_wc_endpoint_url();
@@ -388,4 +418,25 @@ function ordv_shipper_fn_is_wc_endpoint($endpoint) {
         }
     }
     return false;
+}
+
+/**
+ * Get URL API demo or live
+ * @since 1.0.0
+ * @return void
+ */
+function get_url_api(){
+    
+    $demo_active = carbon_get_theme_option('shipper_demo');
+
+    $api_url = NULL;
+
+    if( $demo_active === true ){
+        $api_url = 'https://merchant-api-sandbox.shipper.id';
+    }else{
+        $api_url = 'https://shipper.id';
+    }
+
+    return $api_url;
+
 }

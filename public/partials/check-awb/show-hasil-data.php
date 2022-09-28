@@ -7,7 +7,7 @@
     $latest_status = $data_tracking[$latest_data_n]->logistic_status->description;
 
     $hasil_cek_resi = array(
-        'no_resi'       => $no_resi,
+        'no_resi'       => $detail_data->awb_number,
         'order_id'      => $detail_data->order_id,
         'pengirim'      => $detail_data->consigner->name,
         'o_suburb'      => $detail_data->origin->suburb_name,
@@ -54,7 +54,7 @@
                         <strong>
                             <?php 
                                 $str_time = $hasil_cek_resi['tgl_kirim']; 
-                                $str_time = substr($str_time, 0, -1);
+                                $str_time = substr( $str_time, 0, 19 );
                                 $str_time = str_replace('T', ' ', $str_time);
                                 echo $str_time;
                             ?>

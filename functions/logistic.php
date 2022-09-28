@@ -4,7 +4,7 @@ function ordv_shipper_get_logistics() {
 
     $data = [];
 
-    $api_url = 'https://merchant-api-sandbox.shipper.id/v3/logistic';
+    $api_url = get_url_api().'/v3/logistic';
     $api_key = carbon_get_theme_option('shipper_api_key');
 
     $args = array(
