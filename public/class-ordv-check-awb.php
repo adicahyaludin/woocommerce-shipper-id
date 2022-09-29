@@ -55,46 +55,80 @@ class Ordv_Shipper_Check_Awb {
 	}
 
     /**
-     * Register New Endpoint For Check Resi.
-     *
-     * @return void.
+     * Register Scripts & Styles in check-awb page
+	 * Hooked via	action wp_enqueue_scripts
+	 * @since 		1.0.0
+	 * @return 		void
      */
+	public function ordv_shipper_cek_resi_scripts_load(){
 
-	public function cek_resi_scripts_load(){
-
-		if( shipper_is_wc_endpoint( 'check-awb') ){
+		if( ordv_shipper_fn_is_wc_endpoint( 'check-awb') ){
 
 			wp_enqueue_script( 'cek-resi-script', ORDV_SHIPPER_URI.'public/js/ordv-check-awb.js', array( 'jquery' ), ORDV_SHIPPER_VERSION, true );
 			$settings = array(
 				'ajax_url'  => admin_url( 'admin-ajax.php' ),               
 				'cek_resi'      => [
 					'action'    => 'cek_resi_data',
+				],
+				'get_detail'	=> [
+					'action'	=> 'get_resi_detail',
+					'nonce'     => wp_create_nonce( 'ajax-nonce' )
 				]
 			);
 
 			wp_localize_script( 'cek-resi-script', 'cek_resi_ajax', $settings);
 
+			wp_enqueue_style( $this->plugin_name.'-bulma', 'https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css' );
+			wp_enqueue_style( $this->plugin_name.'-bulma-timeline', ORDV_SHIPPER_URI.'public/css/bulma-timeline.min.css' );
+			wp_enqueue_style( $this->plugin_name.'-check-awb', ORDV_SHIPPER_URI.'public/css/ordv-shipper-check-awb.css' );
+
 		}
-
-
-
 	}
 
-    public function register_check_awb_endpoint(){
+	/**
+	 * Register New endpoint for check awb page
+	 * Hooked via	action init
+	 * @since 		1.0.0
+	 * @return 		void
+	 */
+    public function ordv_shipper_register_check_awb_endpoint(){
         add_rewrite_endpoint( 'check-awb', EP_ROOT | EP_PAGES );
     }
 
-    public function check_awb_query_vars( $vars ){
+
+	/**
+	 * Query vars for check awb page
+	 * Hooked via	filter query_vars
+	 * @since 		1.0.0
+	 * @param 		$vars
+	 * @return 		void
+	 */
+    public function ordv_shipper_check_awb_query_vars( $vars ){
         $vars[] = 'check-awb';
 	    return $vars;
     }
-
-    public function add_check_awb_tab( $items ){
+	
+	/**
+	 * Add tab to myaccount page 
+	 * Hooked via	filter woocommerce_account_menu_items
+	 * @since 		1.0.0
+	 * @param 		$items
+	 * @return 		void
+	 */
+    public function ordv_shipper_add_check_awb_tab( $items ){
         $items['check-awb'] = 'Cek Resi';
 	    return $items;
     }
 
-    public function reorder_account_menu( $items ){
+
+	/**
+	 * Re-order tab menu in my account page woocommerce
+	 * Hooked via	filter woocommerce_account_menu_items 
+	 * @since 		1.0.0
+	 * @param 		array $items
+	 * @return 		void
+	 */
+    public function ordv_shipper_reorder_account_menu( $items ){
         return array(
 	        'dashboard'          => __( 'Dashboard', 'woocommerce' ),
 	        'orders'             => __( 'Orders', 'woocommerce' ),
@@ -106,7 +140,13 @@ class Ordv_Shipper_Check_Awb {
         );
     }
 
-    public function add_check_awb_content(){
+	/**
+	 * Template for check awb page
+	 * Hooked via	action woocommerce_account_check-awb_endpoint
+	 * @since 		1.0.0
+	 * @return 		void
+	 */
+    public function ordv_shipper_add_check_awb_content(){
 
         ob_start();
         include ORDV_SHIPPER_PATH.'public/partials/ordv-check-awb-public-display.php';
@@ -114,7 +154,15 @@ class Ordv_Shipper_Check_Awb {
 
     }
 
-    public function handle_order_number_custom_query_var( $query, $query_vars ){
+	/**
+	 * Handle query order number by using 'no_resi'
+	 * Hooked via	filter woocommerce_order_data_store_cpt_get_orders_query
+	 * @since 		1.0.0
+	 * @param 		$query
+	 * @param 		$query_vars
+	 * @return 		void
+	 */
+    public function ordv_shipper_handle_order_number_custom_query_var( $query, $query_vars ){
         
         if ( ! empty( $query_vars['no_resi'] ) ) {
             $query['meta_query'][] = array(
@@ -126,7 +174,13 @@ class Ordv_Shipper_Check_Awb {
         return $query;
     }
 
-	public function cek_resi_data(){
+	/**
+	 * Check AWB / No Resi data
+	 * Hooked via	action wp_ajax_cek_resi_data
+	 * @since 		1.0.0
+	 * @return 		void
+	 */
+	public function ordv_shipper_cek_resi_data(){
 
 		if(isset($_POST['data']))
 		{
@@ -145,13 +199,13 @@ class Ordv_Shipper_Check_Awb {
 				if($order)
 				{
 					$order_id			= $order[0]->get_id();
-					$get_tracking_id	= get_post_meta($order_id, 'order_shipper_id', true);
+					$order_shipper_id	= get_post_meta($order_id, 'order_shipper_id', true);
 
 					// do ajax here
-					$detail_data = detail_data_tracking( $get_tracking_id );					
+					$detail_data = ordv_shipper_fn_detail_data_tracking( $order_shipper_id );					
 
 					ob_start();
-					include ORDV_SHIPPER_PATH.'public/partials/check-awb/show-data.php';
+					include ORDV_SHIPPER_PATH.'public/partials/check-awb/show-hasil-data.php';
 					$set_data =  ob_get_clean();
 
 					$response = array(
@@ -187,6 +241,50 @@ class Ordv_Shipper_Check_Awb {
 			
 		}
 		
+	}
+
+	/**
+	 * Get detail delivery status for timeline view in check awb page
+	 * Hooked via	action wp_ajax_get_resi_detail
+	 * @since 		1.0.0
+	 * @return 		void
+	 */
+	public function ordv_shipper_get_resi_detail(){
+		
+		if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
+            die( 'Close The Door!');
+        }
+
+		if( $_POST['i'] ){
+
+			$order_shipper_id = $_POST['i'];
+			$detail_data = ordv_shipper_fn_detail_data_tracking( $order_shipper_id );
+
+			ob_start();
+			include ORDV_SHIPPER_PATH.'public/partials/check-awb/show-detail-data.php';
+			$set_data =  ob_get_clean();
+
+			$response = array(
+				'status'	=> 1,
+				'content'	=> $set_data,
+				'notice'	=> 'Data Nomer Resi ditemukan.',
+				'class'		=> 'woocommerce-message',
+			);
+
+		}else{			
+
+			$response = array(
+				'status'	=> 0,					
+				'content'	=> '',
+				'notice'	=> 'Data tidak ditemukan.',
+				'class'		=> 'woocommerce-error',
+			);
+
+		}
+
+		wp_send_json($response);
+		wp_die();
+
 	}
 
 

@@ -66,7 +66,7 @@ class Ordv_Shipper_Public {
 	 * @param  	array 		$cart_item_data
 	 * @return 	void
 	 */
-	public function check_cart( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
+	public function ordv_shipper_check_cart( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
 
 		if( 0 !== absint($variation_id) ) :
 			$term = carbon_get_theme_option("shipper_location_term");

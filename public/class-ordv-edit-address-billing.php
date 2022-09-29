@@ -54,8 +54,13 @@ class Ordv_Shipper_Edit_Address_Billing {
 
 	}
 
-
-    public function load_additonal_styles_scripts(){
+    /**
+     * Add custom css & js in edit-address/billing
+     * Hooked via   action wp_enqueue_scripts
+     * @since       1.0.0
+     * @return      void
+     */
+    public function ordv_shipper_load_additonal_styles_scripts(){
 
         global $wp;
         $current_url    = home_url(add_query_arg(array(),$wp->request));
@@ -76,10 +81,17 @@ class Ordv_Shipper_Edit_Address_Billing {
             
             wp_enqueue_style( $this->plugin_name, plugin_dir_url( __DIR__ ). 'public/css/ordv-shipper-edit-address-billing.css' );
         }
-
     }
 
-    public function edit_billing_add_field( $fields ){
+
+    /**
+     * Add "kelurahan" field in edit-address/billing
+     * Hooked via   filter woocommerce_default_address_fields
+     * @since       1.0.0
+     * @param       $fields
+     * @return      void
+     */
+    public function ordv_shipper_edit_billing_add_field( $fields ){
 
         global $wp;
         $current_url    = home_url(add_query_arg(array(),$wp->request));
@@ -91,8 +103,8 @@ class Ordv_Shipper_Edit_Address_Billing {
 
             $user_order_area_id = get_user_meta( $user_id, 'user_order_area_id', true );
             $user_order_area_text = get_user_meta( $user_id, 'user_order_area_text', true );
-            // $user_order_area_lat = get_user_meta( $user_id, 'user_order_area_lat', true );
-            // $user_order_area_lng = get_user_meta( $user_id, 'user_order_area_lng', true );
+            $user_order_area_lat = get_user_meta( $user_id, 'user_order_area_lat', true );
+            $user_order_area_lng = get_user_meta( $user_id, 'user_order_area_lng', true );
 
                 
             if( $user_order_area_id && $user_order_area_text ){
@@ -110,6 +122,30 @@ class Ordv_Shipper_Edit_Address_Billing {
                     'priority'  => 82
                 ); 
 
+                $fields['ordv-edit-billing-lat'] = array(
+                    'type'      => 'text',
+                    'label'     => __('Lat', 'woocommerce'),
+                    'placeholder'   => _x('lat', 'placeholder', 'woocommerce'),
+                    'required'  => true,
+                    'class'     => array('form-row-wide'),
+                    'clear'     => true,
+                    'priority'  => 83,
+                    'default'   => $user_order_area_lat
+                ); 
+    
+                $fields['ordv-edit-billing-lng'] = array(
+                    'type'      => 'text',
+                    'label'     => __('Lng', 'woocommerce'),
+                    'placeholder'   => _x('lng', 'placeholder', 'woocommerce'),
+                    'required'  => true,
+                    'class'     => array('form-row-wide'),
+                    'clear'     => true,
+                    'priority'  => 84,
+                    'default'   => $user_order_area_lng
+                ); 
+
+
+
             }else{
 
                 $fields['ordv-edit-billing-kelurahan'] = array(
@@ -123,6 +159,26 @@ class Ordv_Shipper_Edit_Address_Billing {
                     'priority'  => 82
                 ); 
 
+                $fields['ordv-edit-billing-lat'] = array(
+                    'type'      => 'text',
+                    'label'     => __('Lat', 'woocommerce'),
+                    'placeholder'   => _x('lat', 'placeholder', 'woocommerce'),
+                    'required'  => true,
+                    'class'     => array('form-row-wide'),
+                    'clear'     => true,
+                    'priority'  => 83
+                ); 
+    
+                $fields['ordv-edit-billing-lng'] = array(
+                    'type'      => 'text',
+                    'label'     => __('Lng', 'woocommerce'),
+                    'placeholder'   => _x('lng', 'placeholder', 'woocommerce'),
+                    'required'  => true,
+                    'class'     => array('form-row-wide'),
+                    'clear'     => true,
+                    'priority'  => 84
+                ); 
+
             }
 
         }
@@ -132,7 +188,13 @@ class Ordv_Shipper_Edit_Address_Billing {
     }
 
 
-    public function get_edit_data_area(){
+    /**
+     * Get list data area for "kelurahan" dropdown option in edit-address/billing
+     * Hooked via   action wp_ajax_get_edit_data_area
+     * @since       1.0.0
+     * @return      mixed
+     */
+    public function ordv_shipper_get_edit_data_area(){
 
         if ( wp_verify_nonce( $_GET['nonce'], 'ajax-nonce' ) ) {
 
@@ -142,7 +204,7 @@ class Ordv_Shipper_Edit_Address_Billing {
             
             if( $keyword ){
 
-                $get_data_area = get_list_area( $keyword );
+                $get_data_area = ordv_shipper_fn_get_list_area( $keyword );
 
                 foreach ($get_data_area as $key => $area) {
                     
@@ -161,6 +223,7 @@ class Ordv_Shipper_Edit_Address_Billing {
                 }
             }
 
+
             WC()->session->__unset( 'data_kurir');
             wp_send_json( $data );
 
@@ -168,13 +231,26 @@ class Ordv_Shipper_Edit_Address_Billing {
 
     }
 
-    public function save_custom_billing_field_data( $user_id ){
+    /**
+     * Save area_id & area_text from edit-address/billing
+     * Hooked via   action woocommerce_customer_save_address
+     * @since       1.0.0
+     * @param       $user_id
+     * @return      void
+     */
+    
+    public function ordv_shipper_save_custom_billing_field_data( $user_id ){
 
         $new_area_id = $_POST['billing_ordv-edit-billing-kelurahan'];
         $new_area_text = $_POST['billing_city'];
 
+        $new_area_lat = $_POST['billing_ordv-edit-billing-lat'];
+        $new_area_lng = $_POST['billing_ordv-edit-billing-lng'];
+
         update_user_meta( $user_id, 'user_order_area_id', $new_area_id );
         update_user_meta( $user_id, 'user_order_area_text', $new_area_text  );
+        update_user_meta( $user_id, 'user_order_area_lat', $new_area_lat );
+        update_user_meta( $user_id, 'user_order_area_lng', $new_area_lng );
 
     }
 

@@ -55,7 +55,14 @@ class Ordv_Shipper_Checkout {
 
 	}
 
-    public function change_province_name( $states ){
+    /**
+     * Change province name to adjust woocommerce and shipper
+     * Hooked via   filter woocommerce_states
+     * @since       1.0.0
+     * @param       array $states
+     * @return      void
+     */
+    public function ordv_shipper_change_province_name( $states ){
         
         $states['ID']['AC'] = 'Aceh';
         $states['ID']['YO'] = 'DI Yogyakarta';
@@ -64,7 +71,14 @@ class Ordv_Shipper_Checkout {
         
     }
 	
-    public function remove_checkout_field( $fields ){
+    /**
+     * Remove unecesarry fied in checkout page
+     * Hooked via   Filter woocommerce_checkout_fields
+     * @since       1.0.0
+     * @param       $fields
+     * @return      void
+     */
+    public function ordv_shipper_remove_checkout_field( $fields ){
         
         unset($fields['billing']['billing_company']);           // remove company field
         unset($fields['billing']['billing_address_1']);         // remove billing address 1 field
@@ -77,7 +91,14 @@ class Ordv_Shipper_Checkout {
 
     }
 
-    public function add_checkout_fields( $fields ){
+    /**
+     * Add custom field in checkout page
+     * Hooked via   filter woocommerce_checkout_fields priority 15
+     * @since       1.0.0
+     * @param       $fields
+     * @return      void
+     */
+    public function ordv_shipper_add_checkout_fields( $fields ){
 
         $fields['billing']['billing_address_1'] = array(
             'type'      => 'textarea',
@@ -87,19 +108,16 @@ class Ordv_Shipper_Checkout {
             'class'     => array('form-row-wide'),
             'clear'     => true,
             'priority'  => 35
-         );
-
+        );
 
         if ( is_user_logged_in() ) {
 
             $user_id = get_current_user_id();
 
-
             $user_order_area_id = get_user_meta( $user_id, 'user_order_area_id', true );
             $user_order_area_text = get_user_meta( $user_id, 'user_order_area_text', true );
             $user_order_area_lat = get_user_meta( $user_id, 'user_order_area_lat', true );
             $user_order_area_lng = get_user_meta( $user_id, 'user_order_area_lng', true );
-
             
             if( $user_order_area_id && $user_order_area_text ){
 
@@ -118,8 +136,7 @@ class Ordv_Shipper_Checkout {
 
                 $fields['billing']['ordv-area']['data-lat'] = $user_order_area_lat;
                 $fields['billing']['ordv-area']['data-lng'] = $user_order_area_lng;
-
-
+                
             }else{
 
                 $fields['billing']['ordv-area'] = array(
@@ -163,12 +180,25 @@ class Ordv_Shipper_Checkout {
         return $fields;
     }
 
-    public function override_default_address_fields( $address_fields ) {
+    /**
+     * Remove required state field
+     * Hooked via   filter woocommerce_default_address_fields Priority 999
+     * @since       1.0.0
+     * @param       $address_fields
+     * @return      void
+     */
+    public function ordv_shipper_override_default_address_fields( $address_fields ) {
         $address_fields['state']['required'] = false;
         return $address_fields;
     }
 
-    public function load_checkout_scripts(){
+    /**
+     * Load scripts only in checkout page
+     * Hooked via   action woocommerce_checkout_billing
+     * @since       1.0.0
+     * @return      void
+     */
+    public function ordv_shipper_load_checkout_scripts(){
 
         $style = '#billing_country_field, #shipping_country_field{ display: none !important; }';
         $style .= '#billing_delivery_option_field.radio {display: inline !important; margin-left: 5px;}';
@@ -202,8 +232,13 @@ class Ordv_Shipper_Checkout {
         }        
     }
 
-
-    public function get_data_area(){
+    /**
+     * Get list "kelurahan" data for checkout page
+     * Hooked via   add_action wp_ajax_get_data_area
+     * @since       1.0.0
+     * @return      void
+     */
+    public function ordv_shipper_get_data_area(){
 
         if ( wp_verify_nonce( $_GET['nonce'], 'ajax-nonce' ) ) {
 
@@ -213,7 +248,7 @@ class Ordv_Shipper_Checkout {
             
             if( $keyword ){
 
-                $get_data_area = get_list_area( $keyword );
+                $get_data_area = ordv_shipper_fn_get_list_area( $keyword );
 
                 foreach ($get_data_area as $key => $area) {
                     
@@ -238,7 +273,14 @@ class Ordv_Shipper_Checkout {
         }
     }
 
-    public function get_data_services(){
+    /**
+     * Get list "kurir" and cost
+     * @uses    Hooked add_action wp_ajax_get_data_services_first_time
+     * @uses    Hooked add_action wp_ajax_get_data_services
+     * @since   1.0.0
+     * @return  void
+     */
+    public function ordv_shipper_get_data_services(){
 
         if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) {
             die( 'Close The Door!');
@@ -254,12 +296,12 @@ class Ordv_Shipper_Checkout {
                 $user_id = get_current_user_id();                                
                 $user_order_area_lat = get_user_meta( $user_id, 'user_order_area_lat', true );
                 $user_order_area_lng = get_user_meta( $user_id, 'user_order_area_lng', true );
-            
+
             }
 
             $api_d_area_id  = intval( $_POST['a'] );
             $area_id_lat    = $user_order_area_lat;
-            $area_id_lng    = $user_order_area_lng;
+            $area_id_lng    = $user_order_area_lng;           
 
         }else{
 
@@ -269,9 +311,9 @@ class Ordv_Shipper_Checkout {
 
         }
 
-        $data_packages  = get_packages_data();
+        $data_packages  = ordv_shipper_fn_get_packages_data();
 
-        $data_list_kurir = get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_packages );
+        $data_list_kurir = ordv_shipper_fn_get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_packages );
 
         // set session data for add_rates
         WC()->session->set( 'data_kurir' , $data_list_kurir );
@@ -285,17 +327,27 @@ class Ordv_Shipper_Checkout {
         // save data for session
         WC()->session->set( 'data_area' , $data );
 
-        $result = 'ok';
+        //$result = 'ok';
+        $result = array(
+            'success'   => true,
+            'message'   => 'ok'
+        );
         wp_send_json( $result );
         wp_die();
 
     }
 
-
-    public function custom_shipping_package_name( $name ){
+    /**
+     * Display package detail data in sidebar of checkout page
+     * Hooked via   filter woocommerce_shipping_package_name Priority 10
+     * @since       1.0.0
+     * @param       $name
+     * @return      void
+     */
+    public function ordv_shipper_custom_shipping_package_name( $name ){
         
         $name           = 'Pengiriman';
-        $packages       = get_packages_data();
+        $packages       = ordv_shipper_fn_get_packages_data();
 
         $active_weight_unit     = get_option('woocommerce_weight_unit');
         $active_dimension_unit  = get_option('woocommerce_dimension_unit');
@@ -314,7 +366,14 @@ class Ordv_Shipper_Checkout {
         return $name;
         
     }
-
+    
+    /**
+     * Update order review
+     * Hooked via -
+     * @since 1.0.0
+     * @param $posted_data
+     * @return void
+     */
     public function update_order_review( $posted_data ){
         
         // Parsing posted data on checkout
@@ -333,15 +392,29 @@ class Ordv_Shipper_Checkout {
 
     }
     
-    public function filter_cart_needs_shipping( $needs_shipping ) {
+    /**
+     * Remove Shipping option data in cart page
+     * Hooked via   filter woocommerce_cart_needs_shipping
+     * @since       1.0.0
+     * @param       $needs_shipping
+     * @return      void
+     */
+    public function ordv_shipper_filter_cart_needs_shipping( $needs_shipping ) {
         if ( is_cart() ) {
             $needs_shipping = false;
         }
         return $needs_shipping;
     }
 
-    public function save_order_custom_meta_data(  $order, $data  ){
-        
+    /**
+     * Save order custom field data when create order
+     * Hooked via   action woocommerce_checkout_create_order
+     * @since       1.0.0
+     * @param       $order
+     * @param       $data
+     * @return      void
+     */
+    public function ordv_shipper_save_order_custom_meta_data(  $order, $data  ){
                 
         if ( isset( $_POST['shipping_method'][0] ) ){
             $order->update_meta_data('rate_id', $_POST['shipping_method'][0] );
@@ -353,6 +426,11 @@ class Ordv_Shipper_Checkout {
 
         $data_dest_cord = WC()->session->get( 'dest_cord' );
 
+        // ob_start();
+        // echo var_dump($_POST);	
+        // $a = 'test 123'.ob_get_clean();		
+        // error_log($a);
+
         if( $data_dest_cord ){
             $order->update_meta_data('d_lat_area_id', $data_dest_cord['lat'] );
             $order->update_meta_data('d_lng_area_id', $data_dest_cord['lng'] );
@@ -362,7 +440,14 @@ class Ordv_Shipper_Checkout {
 
     }
 
-    public function shipper_additional_detail( $order ){
+    /**
+     * Replace '[receiver_name]' with customer name
+     * Hooked via   action ordv_shipper_shipper_additional_detail
+     * @since       1.0.0
+     * @param       $order
+     * @return      void
+     */
+    public function ordv_shipper_shipper_additional_detail( $order ){
 
         $status_tracking = get_post_meta( $order->get_id(), 'status_tracking', true );
         

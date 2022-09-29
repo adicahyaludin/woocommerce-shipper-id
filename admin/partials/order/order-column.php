@@ -3,8 +3,7 @@
     $order_id   = $post_id;
     $order      = wc_get_order( $order_id );
     $get_item   = $order->get_items();
-
-    //$detail_shipping =  $order->get_shipping_methods();
+    
     $detail_shipping = $order->get_items( 'shipping' );
 
     foreach ($order->get_items() as $item_id => $item ) {
@@ -14,6 +13,16 @@
         echo '<p>'.$product_name.' x '.$item_quantity.'</p>';
         
     }
+
+    $kurir_name = '';
+    foreach( $detail_shipping as $item_id => $item ){
+        // Get the data in an unprotected array
+        $item_data = $item->get_data();
+        $shipping_data_name = $item_data['name'];
+        $kurir_name         = $shipping_data_name;
+    }
+
+    echo '<p><strong>Kurir:</strong> '.$kurir_name.'</p>';
 
     
     $name = $order->get_billing_first_name().' '.$order->get_billing_last_name();
@@ -68,7 +77,7 @@
         
         $order_shipper_id = get_post_meta( $order_id, 'order_shipper_id', true );
         
-        $get_order_data = get_shipper_order_data( $order_shipper_id );
+        $get_order_data = ordv_shipper_fn_get_shipper_order_data( $order_shipper_id );
         $awb_number     = $get_order_data['awb_number'];
         $tracking_status = $get_order_data['tracking_status'];
 

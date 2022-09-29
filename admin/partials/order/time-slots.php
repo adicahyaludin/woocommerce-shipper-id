@@ -1,6 +1,6 @@
 <?php 
 
-						$list_time = get_pickup_time();
+						$list_time = ordv_shipper_fn_get_pickup_time();
 
 
 						$list_radio = '<li>';

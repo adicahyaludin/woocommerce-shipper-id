@@ -34,6 +34,11 @@
 			
 		var d = $("#billing_ordv-edit-billing-kelurahan").select2('data')[0];
 		$('#billing_city').val( d['text'] );
+		var e_data = d['text'].split(",");
+
+		$('#billing_postcode').val( e_data[0] );
+		$('#billing_ordv-edit-billing-lat').val( d['lat'] );
+		$('#billing_ordv-edit-billing-lng').val( d['lng'] );
 
 	});
 	
