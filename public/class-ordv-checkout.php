@@ -136,7 +136,7 @@ class Ordv_Shipper_Checkout {
 
                 $fields['billing']['ordv-area']['data-lat'] = $user_order_area_lat;
                 $fields['billing']['ordv-area']['data-lng'] = $user_order_area_lng;
-
+                
             }else{
 
                 $fields['billing']['ordv-area'] = array(
@@ -296,12 +296,12 @@ class Ordv_Shipper_Checkout {
                 $user_id = get_current_user_id();                                
                 $user_order_area_lat = get_user_meta( $user_id, 'user_order_area_lat', true );
                 $user_order_area_lng = get_user_meta( $user_id, 'user_order_area_lng', true );
-            
+
             }
 
             $api_d_area_id  = intval( $_POST['a'] );
             $area_id_lat    = $user_order_area_lat;
-            $area_id_lng    = $user_order_area_lng;
+            $area_id_lng    = $user_order_area_lng;           
 
         }else{
 
@@ -415,7 +415,6 @@ class Ordv_Shipper_Checkout {
      * @return      void
      */
     public function ordv_shipper_save_order_custom_meta_data(  $order, $data  ){
-        
                 
         if ( isset( $_POST['shipping_method'][0] ) ){
             $order->update_meta_data('rate_id', $_POST['shipping_method'][0] );
@@ -426,6 +425,11 @@ class Ordv_Shipper_Checkout {
         }
 
         $data_dest_cord = WC()->session->get( 'dest_cord' );
+
+        // ob_start();
+        // echo var_dump($_POST);	
+        // $a = 'test 123'.ob_get_clean();		
+        // error_log($a);
 
         if( $data_dest_cord ){
             $order->update_meta_data('d_lat_area_id', $data_dest_cord['lat'] );

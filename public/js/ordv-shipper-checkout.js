@@ -13,9 +13,10 @@
 			var get_text = $('#ordv-area option:selected').text();
 			var s_data = get_text.split(',');
 			
-			$('#billing_postcode').val(s_data[0]);			
+			$('#billing_postcode').val(s_data[0]);
+			//var a = $("#ordv-area").val();
 
-			var a = $("#ordv-area").val();
+			var a = $('#ordv-area option:selected').val();
 
 			$.ajax({
 				type: 'POST',

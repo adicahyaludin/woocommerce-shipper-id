@@ -18,7 +18,6 @@
         'kurir'         => $detail_data->courier->name,
         'tgl_kirim'     => $detail_data->creation_date,
         'latest_status' => $latest_status
-
     );
 
 ?>

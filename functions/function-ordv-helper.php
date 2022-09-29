@@ -6,7 +6,7 @@
  * @uses    Ordv_Shipper_Edit_Address_Billing::ordv_shipper_get_edit_data_area
  * @since   1.0.0
  * @param   string  $keyword
- * @return  void
+ * @return  mixed
  */
 function ordv_shipper_fn_get_list_area( $keyword ){
 
@@ -183,7 +183,6 @@ function ordv_shipper_fn_get_data_list_kurir( $api_d_area_id, $area_id_lat, $are
     $dest_area_lat  = $area_id_lat;
     $dest_area_lng  = $area_id_lng;
 
-
     // set session for destination lat & lng order
     $dest_cord = array(
         'lat'   => strval( $dest_area_lat ),
@@ -251,7 +250,7 @@ function ordv_shipper_fn_get_data_list_kurir( $api_d_area_id, $area_id_lat, $are
     $data_api_instant           = json_decode($body_instant);
     $data_list_kurir_instant    = $data_api_instant->data->pricings;
 
-
+   
     // 'regular'
     $request_regular = wp_remote_post(
         $endpoint_url_regular,
@@ -434,7 +433,7 @@ function get_url_api(){
     if( $demo_active === true ){
         $api_url = 'https://merchant-api-sandbox.shipper.id';
     }else{
-        $api_url = 'https://shipper.id';
+        $api_url = 'https://merchant-api.shipper.id';
     }
 
     return $api_url;

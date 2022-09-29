@@ -103,8 +103,8 @@ class Ordv_Shipper_Edit_Address_Billing {
 
             $user_order_area_id = get_user_meta( $user_id, 'user_order_area_id', true );
             $user_order_area_text = get_user_meta( $user_id, 'user_order_area_text', true );
-            // $user_order_area_lat = get_user_meta( $user_id, 'user_order_area_lat', true );
-            // $user_order_area_lng = get_user_meta( $user_id, 'user_order_area_lng', true );
+            $user_order_area_lat = get_user_meta( $user_id, 'user_order_area_lat', true );
+            $user_order_area_lng = get_user_meta( $user_id, 'user_order_area_lng', true );
 
                 
             if( $user_order_area_id && $user_order_area_text ){
@@ -122,6 +122,30 @@ class Ordv_Shipper_Edit_Address_Billing {
                     'priority'  => 82
                 ); 
 
+                $fields['ordv-edit-billing-lat'] = array(
+                    'type'      => 'text',
+                    'label'     => __('Lat', 'woocommerce'),
+                    'placeholder'   => _x('lat', 'placeholder', 'woocommerce'),
+                    'required'  => true,
+                    'class'     => array('form-row-wide'),
+                    'clear'     => true,
+                    'priority'  => 83,
+                    'default'   => $user_order_area_lat
+                ); 
+    
+                $fields['ordv-edit-billing-lng'] = array(
+                    'type'      => 'text',
+                    'label'     => __('Lng', 'woocommerce'),
+                    'placeholder'   => _x('lng', 'placeholder', 'woocommerce'),
+                    'required'  => true,
+                    'class'     => array('form-row-wide'),
+                    'clear'     => true,
+                    'priority'  => 84,
+                    'default'   => $user_order_area_lng
+                ); 
+
+
+
             }else{
 
                 $fields['ordv-edit-billing-kelurahan'] = array(
@@ -133,6 +157,26 @@ class Ordv_Shipper_Edit_Address_Billing {
                     'clear'     => true,
                     'options'   => array( '' => '' ),
                     'priority'  => 82
+                ); 
+
+                $fields['ordv-edit-billing-lat'] = array(
+                    'type'      => 'text',
+                    'label'     => __('Lat', 'woocommerce'),
+                    'placeholder'   => _x('lat', 'placeholder', 'woocommerce'),
+                    'required'  => true,
+                    'class'     => array('form-row-wide'),
+                    'clear'     => true,
+                    'priority'  => 83
+                ); 
+    
+                $fields['ordv-edit-billing-lng'] = array(
+                    'type'      => 'text',
+                    'label'     => __('Lng', 'woocommerce'),
+                    'placeholder'   => _x('lng', 'placeholder', 'woocommerce'),
+                    'required'  => true,
+                    'class'     => array('form-row-wide'),
+                    'clear'     => true,
+                    'priority'  => 84
                 ); 
 
             }
@@ -148,7 +192,7 @@ class Ordv_Shipper_Edit_Address_Billing {
      * Get list data area for "kelurahan" dropdown option in edit-address/billing
      * Hooked via   action wp_ajax_get_edit_data_area
      * @since       1.0.0
-     * @return      void
+     * @return      mixed
      */
     public function ordv_shipper_get_edit_data_area(){
 
@@ -179,6 +223,7 @@ class Ordv_Shipper_Edit_Address_Billing {
                 }
             }
 
+
             WC()->session->__unset( 'data_kurir');
             wp_send_json( $data );
 
@@ -199,8 +244,13 @@ class Ordv_Shipper_Edit_Address_Billing {
         $new_area_id = $_POST['billing_ordv-edit-billing-kelurahan'];
         $new_area_text = $_POST['billing_city'];
 
+        $new_area_lat = $_POST['billing_ordv-edit-billing-lat'];
+        $new_area_lng = $_POST['billing_ordv-edit-billing-lng'];
+
         update_user_meta( $user_id, 'user_order_area_id', $new_area_id );
         update_user_meta( $user_id, 'user_order_area_text', $new_area_text  );
+        update_user_meta( $user_id, 'user_order_area_lat', $new_area_lat );
+        update_user_meta( $user_id, 'user_order_area_lng', $new_area_lng );
 
     }
 
