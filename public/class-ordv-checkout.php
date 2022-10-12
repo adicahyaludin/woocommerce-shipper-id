@@ -426,11 +426,6 @@ class Ordv_Shipper_Checkout {
 
         $data_dest_cord = WC()->session->get( 'dest_cord' );
 
-        // ob_start();
-        // echo var_dump($_POST);	
-        // $a = 'test 123'.ob_get_clean();		
-        // error_log($a);
-
         if( $data_dest_cord ){
             $order->update_meta_data('d_lat_area_id', $data_dest_cord['lat'] );
             $order->update_meta_data('d_lng_area_id', $data_dest_cord['lng'] );
