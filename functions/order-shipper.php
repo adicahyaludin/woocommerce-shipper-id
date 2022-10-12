@@ -64,39 +64,17 @@ function ordv_shipper_fn_create_order_shipper( $order_id ){
 
     }
 
-    /*
-    * 1st fix code
-    *
     $term           = carbon_get_theme_option("shipper_location_term");
     $item_attribute = $item_data->get_meta("pa_" . $term);    
-    $item_term      = get_term_by( 'name',  $item_attribute, 'pa_' . $term );
+    //$item_term    = get_term_by( 'name',  $item_attribute, 'pa_' . $term );
+    $item_term      = get_term_by( 'slug',  $item_attribute, 'pa_' . $term );
 
     $area_id        = get_term_meta( $item_term->term_taxonomy_id, '_origin_area_id', true);
     $area_text      = get_term_meta( $item_term->term_taxonomy_id, '_origin_area_text', true);
 
     $origin_lat     = get_term_meta( $item_term->term_taxonomy_id, '_shipper_courier_origin_lat', true);
     $origin_lng     = get_term_meta( $item_term->term_taxonomy_id, '_shipper_courier_origin_lng', true);
-    */
-
-    /**
-     *  2nd fix code
-     */
-    $s_pid          = $items[0]['id'];
-    $_product       = wc_get_product( $s_pid );
     
-    $term           = carbon_get_theme_option("shipper_location_term"); 
-
-    $taxonomy       = get_taxonomy( 'pa_'.$term )->labels->singular_name;
-    $item_attribute = $_product->get_attribute( $taxonomy );
-
-    $item_term      = get_term_by( 'name',  $item_attribute, 'pa_' . $term );
-
-    $area_id        = get_term_meta( $item_term->term_taxonomy_id, '_origin_area_id', true);
-    $area_text      = get_term_meta( $item_term->term_taxonomy_id, '_origin_area_text', true);
-
-    $origin_lat     = get_term_meta( $item_term->term_taxonomy_id, '_shipper_courier_origin_lat', true);
-    $origin_lng     = get_term_meta( $item_term->term_taxonomy_id, '_shipper_courier_origin_lng', true);
-
 
     // destination cordinates
     $dest_lat = strval( get_post_meta( $order_id, 'd_lat_area_id', true ));
