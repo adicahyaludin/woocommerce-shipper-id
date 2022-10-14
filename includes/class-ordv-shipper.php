@@ -173,7 +173,7 @@ class Ordv_Shipper {
 	private function define_admin_hooks() {
 
 		$plugin_admin = new Ordv_Shipper_Admin( $this->get_plugin_name(), $this->get_version() );
-
+		
 		$this->loader->add_action( "after_setup_theme",							$plugin_admin, "ordv_shipper_load_carbon_fields", 10);
 		$this->loader->add_action( "carbon_fields_register_fields",				$plugin_admin, "ordv_shipper_add_plugin_options", 10);
 		$this->loader->add_action( "carbon_fields_register_fields",				$plugin_admin, "ordv_shipper_add_location_options", 10);
@@ -194,6 +194,10 @@ class Ordv_Shipper {
 
 		$this->loader->add_action( 'init', 										$plugin_admin, 'ordv_shipper_register_custom_shipping_status' );
 		$this->loader->add_filter( 'wc_order_statuses',							$plugin_admin, 'ordv_shipper_shipper_add_status_to_list' );
+		
+		
+
+
 			
 	}
 
@@ -234,6 +238,7 @@ class Ordv_Shipper {
 
 		$plugin_check_awb = new Ordv_Shipper_Check_Awb( $this->get_plugin_name(), $this->get_version() );
 		$this->loader->add_action( 'wp_enqueue_scripts',						$plugin_check_awb, 'ordv_shipper_cek_resi_scripts_load' );
+		$this->loader->add_action( 'rest_api_init', 							$plugin_check_awb, 'ordv_add_callback_url_endpoint', 10 );
 		$this->loader->add_action( 'init', 										$plugin_check_awb, 'ordv_shipper_register_check_awb_endpoint');
 		$this->loader->add_filter( 'query_vars',								$plugin_check_awb, 'ordv_shipper_check_awb_query_vars' );
 		$this->loader->add_filter( 'woocommerce_account_menu_items',			$plugin_check_awb, 'ordv_shipper_add_check_awb_tab' );

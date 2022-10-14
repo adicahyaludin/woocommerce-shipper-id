@@ -439,3 +439,60 @@ function get_url_api(){
     return $api_url;
 
 }
+
+/**
+ * Get callback data from shipper
+ * @since 1.0.0
+ * @return mixed;
+ */
+function ordv_update_order_callback(){
+
+    $data_webhook = file_get_contents("php://input");
+	$events_webhook = json_decode($data_webhook, true);	
+	
+	// get order ID by tracking ID dan update data
+	if( $events_webhook ):
+        
+        $tracking_id = $events_webhook['tracking_id'];
+        $order 	= wc_get_orders( array( 'order_shipper_id' =>  $tracking_id ) );
+	
+		if( $order ):
+			$order_id	= $order[0]->get_id();
+
+			$get_shipper_status_tracking	= $events_webhook['external_status']['description'];
+			$get_shipper_status_code	 	= $events_webhook['external_status']['code'];
+			$get_shipper_no_resi 			= $events_webhook['awb'];
+	
+			update_post_meta( $order_id, 'status_code',  $get_shipper_status_code );
+			update_post_meta( $order_id, 'status_tracking',  $get_shipper_status_tracking );
+
+			if( ! $get_shipper_no_resi | '' == $get_shipper_no_resi):
+            	update_post_meta( $order_id, 'no_resi',  $get_shipper_no_resi );
+			endif;
+	
+			//get data after update
+			$order_status_code	= get_post_meta( $order_id, 'status_code', true );	
+			$current_order = wc_get_order($order_id);
+	
+			if( 1190 == $order_status_code || 1180 == $order_status_code || 1170 == $order_status_code || 1160 == $order_status_code ):
+
+			$current_order->update_status('wc-in-shipping');
+        	$current_order->save();
+
+		endif;
+	
+		if( 2000 == $order_status_code ):
+
+			$current_order->update_status('wc-completed');
+        	$current_order->save();
+
+		endif;
+
+		else:
+			// do nothing
+		endif;
+
+    else:
+        // do nothing
+    endif;
+}

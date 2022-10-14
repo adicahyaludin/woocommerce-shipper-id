@@ -287,5 +287,23 @@ class Ordv_Shipper_Check_Awb {
 
 	}
 
+	/**
+	 * Register new endpoint API for shipper callback
+	 * Hooked via	action rest_api_init, priority 10
+	 * @since 		1.0.0
+	 * @return		mixed
+	 */
+	public function ordv_add_callback_url_endpoint(){
+		register_rest_route(
+			'shipper-webhook/v1', // Namespace
+			'update-order', // Endpoint
+			array(
+				'methods'  => 'POST',
+				'callback' => 'ordv_update_order_callback'
+			)
+		);
+	}
+
+
 
 }
