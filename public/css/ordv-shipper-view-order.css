@@ -27,10 +27,6 @@ input[type="text"]{
     background-color: transparent !important;
 }
 
-.status-paket .table tbody tr td:last-child{
-    padding-top:18px !important;
-}
-
 .hasil-cek-resi table tbody td, .status-paket table tbody td, .data-paket table tbody td{
     border: none !important;
     padding: 0 .75em !important;

@@ -84,6 +84,8 @@ class Ordv_Shipper_View_Order{
             $detail_data = ordv_shipper_fn_detail_data_tracking( $order_shipper_id );
             $update_data = ordv_shipper_fn_update_data_tracking( $order_id, $detail_data );
 
+			
+
 			ob_start();
             include ORDV_SHIPPER_PATH.'public/partials/view-order/show-order-hasil-data.php';
 			include ORDV_SHIPPER_PATH.'public/partials/view-order/show-order-detail-data.php';

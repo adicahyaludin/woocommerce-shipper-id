@@ -578,4 +578,24 @@ class Ordv_Shipper_Admin {
 
 	}
 
+	/**
+	 * Add detail tracking in order detail page dashboard
+	 * Hooked via	action carbon_fields_register_fields, priority 30
+	 * @since 		1.0.0
+	 * @return 		void
+	 */
+	public function ordv_shipper_add_tracking_order_detail(){
+
+		//$post_id = $_GET['post'];
+		$html_text = 'this is delivery tracking data';
+		
+		Container::make( 'post_meta', __('Delivery Status', 'ordv-shipper'))		
+			->where( 'post_type', '=', 'shop_order' )
+			->set_priority( 'low' )
+			->add_fields( array(
+				Field::make( 'html', 'crb_information_text' )
+    			->set_html( 'order_id = '.$html_text )
+			) );
+	}
+
 }

@@ -53,10 +53,15 @@
                         Tanggal Pengiriman<br />
                         <strong>
                             <?php 
-                                $str_time = $hasil_cek_resi['tgl_kirim']; 
+                                $str_time = $hasil_cek_resi['tgl_kirim'];                                 
                                 $str_time = substr( $str_time, 0, 19 );
                                 $str_time = str_replace('T', ' ', $str_time);
-                                echo $str_time;
+
+                                $datetime  = strtotime($str_time);
+                                $new_date  = date('d-m-Y H:i:s', $datetime);
+
+                                $new_date_7 = date('d-m-Y H:i:s', strtotime('+7 hours', strtotime($new_date)));
+                                echo $new_date_7;
                             ?>
                         </strong>
                     </td>
@@ -73,9 +78,7 @@
                         <strong><?php echo $hasil_cek_resi['penerima'];?></strong><br />
                         <strong><?php echo $hasil_cek_resi['d_suburb'].', '.$hasil_cek_resi['d_city']; ?></strong>                        
                     </td>
-                    <td class="text-right">
-                        <a href="#" class="button" data_order_id=<?php echo $hasil_cek_resi['order_id'];?>>Detail</a>
-                    </td>
+                    
                 </tr>
             </tbody>
         </table>

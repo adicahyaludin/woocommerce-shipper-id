@@ -23,8 +23,13 @@
                                     <?php 
                                         $str_time = $data->created_date; 
                                         $str_time = substr( $str_time, 0, 19 );
-                                        $str_time = str_replace('T', ',', $str_time);
-                                        echo $str_time;
+                                        $str_time = str_replace('T', ' ', $str_time);
+
+                                        $datetime  = strtotime($str_time);
+                                        $new_date  = date('d-m-Y H:i:s', $datetime);
+
+                                        $new_date_7 = date('d-m-Y H:i:s', strtotime('+7 hours', strtotime($new_date)));
+                                        echo $new_date_7;
                                     ?>
                                 </div>
                             </div>                                                
