@@ -64,7 +64,16 @@ class Ordv_Shipper_Edit_Address_Billing {
 
         global $wp;
         $current_url    = home_url(add_query_arg(array(),$wp->request));
-        $billing        = home_url('/my-account/edit-address/billing');
+
+        $current_lang_id = get_locale();
+
+        if( 'en_US' === $current_lang_id ):
+            $billing   = home_url('/my-account/edit-address/billing');
+        endif;
+        
+        if( 'id_ID' === $current_lang_id ):
+            $billing   = home_url('/my-account/edit-address/penagihan');
+        endif;
 
         if( is_wc_endpoint_url('edit-address') && $current_url === $billing ){
             
@@ -95,7 +104,16 @@ class Ordv_Shipper_Edit_Address_Billing {
 
         global $wp;
         $current_url    = home_url(add_query_arg(array(),$wp->request));
-        $billing        = home_url('/my-account/edit-address/billing');
+
+        $current_lang_id = get_locale();
+
+        if( 'en_US' === $current_lang_id ):
+            $billing   = home_url('/my-account/edit-address/billing');
+        endif;
+        
+        if( 'id_ID' === $current_lang_id ):
+            $billing   = home_url('/my-account/edit-address/penagihan');
+        endif;
 
         if( is_wc_endpoint_url('edit-address') && $current_url === $billing ){
 
