@@ -496,3 +496,13 @@ function ordv_update_order_callback(){
         // do nothing
     endif;
 }
+
+function orvd_admin_delivery_tracking( $post_id ){
+    
+    ob_start();
+    include ORDV_SHIPPER_PATH.'admin/partials/order/delivery-tracking.php';
+    $set_data =  ob_get_clean();
+
+    return $set_data;
+
+}

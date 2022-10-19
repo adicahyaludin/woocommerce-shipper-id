@@ -7,7 +7,7 @@
  * @uses    Ordv_Shipper_Check_Awb::ordv_shipper_get_resi_detail
  * @uses    Ordv_Shipper_View_Order::ordv_shipper_add_delivery_details
  * @param   int $order_shipper_id
- * @return  void
+ * @return  mixed
  */
 function ordv_shipper_fn_detail_data_tracking( $order_shipper_id ){
     $endpoint_get_data_shipper      = '/v3/order/'.$order_shipper_id;
