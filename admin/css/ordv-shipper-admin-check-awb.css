@@ -1,12 +1,3 @@
-input[type="text"]{
-    background-color: transparent !important;
-    border: 1px solid rgb(219, 219, 219) !important;
-    box-shadow: none !important;
-}
-
-.button{
-    border-radius: 4px !important;
-}
 
 .detail-resi{
     border:1px solid #f14668 !important;
@@ -23,16 +14,20 @@ input[type="text"]{
     margin: 32px 0px;
 }
 
-.status-paket .table tbody tr td{
+.status-paket .table tbody tr td,
+.data-paket .table tbody tr td{
     background-color: transparent !important;
 }
 
-.hasil-cek-resi table tbody td, .status-paket table tbody td, .data-paket table tbody td{
+
+.status-paket .table tbody td,
+.data-paket .table tbody td{
     border: none !important;
     padding: 0 .75em !important;
 }
 
-table tbody td p{
+.status-paket .table tbody td p,
+.data-paket .table tbody td p{
     padding: 1em 0 0 1em !important;
 }
 

@@ -5,7 +5,7 @@
     $get_item   = $order->get_items();
     
     $detail_shipping = $order->get_items( 'shipping' );
-
+    
     foreach ($order->get_items() as $item_id => $item ) {
         $product_name   = $item->get_name(); // Get the item name (product name)
         $item_quantity  = $item->get_quantity(); // Get the item quantity
@@ -59,18 +59,26 @@
 
 
 <?php 
-    if( $order->is_paid()||$order->has_status('processing')):
+    if( $order->has_shipping_method('ordv-shipper') ):
+    
+        if( $order->is_paid()||$order->has_status('processing')):
 ?>
-    <?php 
-        $order_shipper_id = get_post_meta( $order_id, 'order_shipper_id', true );
-        if( ! $order_shipper_id ):
-    ?>
-        <p style="margin-top:8px;">
-            <a class="button button-secondary btn-create-order-shipper" data_order_id="<?php echo $order_id; ?>" href="#">Buat Order di Shipper</a>        
-        </p>
-    <?php endif; ?>
+            <?php 
+                $order_shipper_id = get_post_meta( $order_id, 'order_shipper_id', true );
+                if( ! $order_shipper_id ):
+            ?>
+                <p style="margin-top:8px;">
+                    <a class="button button-secondary btn-create-order-shipper" data_order_id="<?php echo $order_id; ?>" href="#">Buat Order di Shipper</a>        
+                </p>
+            <?php endif; ?>
 
-<?php endif; ?>
+        <?php endif; ?>
+
+    <?php 
+        else:
+            // do nothing
+        endif; 
+    ?>
 
 <?php
     if ( $order->has_status('waiting-delivery')):
@@ -96,15 +104,20 @@
         
 ?>
     <?php 
-        //if( ! $pickup_code ): 
-        if( '1' !== $is_activate ):           
+        if( $order->has_shipping_method('ordv-shipper') ): 
+            if( '1' !== $is_activate ):           
     ?>
-        <p style="margin-top:8px;">                
-            <a href="#" class="button wc-action-button open-dialog" data_order_id="<?php echo $order_id; ?>">Aktifkan Pickup Order</a>
-        </p>
-    <?php else: ?>
-        <!--  hide button -->
-    <?php endif; ?>
+                <p style="margin-top:8px;">                
+                    <a href="#" class="button wc-action-button open-dialog" data_order_id="<?php echo $order_id; ?>">Aktifkan Pickup Order</a>
+                </p>
+            <?php else: ?>
+                <!--  hide button -->
+            <?php endif; ?>
 
+    <?php 
+        else:
+            // do nothing
+        endif; 
+    ?>
 
 <?php endif; ?>

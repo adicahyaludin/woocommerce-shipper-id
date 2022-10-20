@@ -124,6 +124,12 @@ class Ordv_Shipper_Admin {
 
 		endif;
 
+		if ( 'post' === $screen->base && 'shop_order' === $screen->id ):			
+			wp_enqueue_style( $this->plugin_name.'admin-base-table', ORDV_SHIPPER_URI.'admin/css/ordv-shipper-admin-base-table.css' );			
+			wp_enqueue_style( $this->plugin_name, ORDV_SHIPPER_URI.'admin/css/bulma-timeline.min.css' );
+			wp_enqueue_style( $this->plugin_name.'admin-check-awb', ORDV_SHIPPER_URI.'admin/css/ordv-shipper-admin-check-awb.css' );
+		endif;
+
 	}
 
 	/**
@@ -575,6 +581,49 @@ class Ordv_Shipper_Admin {
 		}
 
 		return $new;
+
+	}
+
+	/**
+	 * Add detail tracking in order detail page dashboard
+	 * Hooked via	action carbon_fields_register_fields, priority 30
+	 * @since 		1.0.0
+	 * @return 		void
+	 */
+	public function ordv_shipper_add_tracking_order_detail(){
+
+		
+		if( $_REQUEST ):
+
+			if( isset( $_REQUEST['post'] ) && $_REQUEST['action'] ):
+
+				$post_id 		= ( $_REQUEST['post'] ) ? $_REQUEST['post'] : 0;
+				$post_action	= ( $_REQUEST['action'] ) ? $_REQUEST['action'] : '';
+
+				if( 0 !== $post_id && 'edit' == $post_action ):
+
+					$set_data = orvd_admin_delivery_tracking( $post_id );
+
+					Container::make( 'post_meta', __('Delivery Status', 'ordv-shipper'))		
+						->where( 'post_type', '=', 'shop_order' )
+						->set_priority( 'low' )
+						->add_fields( array(
+							Field::make( 'html', 'crb_information_text' )
+							->set_html( $set_data )
+						)
+					);
+
+				else:
+					// do nothing
+				endif;
+
+			else:
+				// do nothing
+			endif;			
+		
+		else:
+			// do nothing		
+		endif;
 
 	}
 

@@ -177,6 +177,7 @@ class Ordv_Shipper {
 		$this->loader->add_action( "after_setup_theme",							$plugin_admin, "ordv_shipper_load_carbon_fields", 10);
 		$this->loader->add_action( "carbon_fields_register_fields",				$plugin_admin, "ordv_shipper_add_plugin_options", 10);
 		$this->loader->add_action( "carbon_fields_register_fields",				$plugin_admin, "ordv_shipper_add_location_options", 10);
+		$this->loader->add_action( "carbon_fields_register_fields",				$plugin_admin, "ordv_shipper_add_tracking_order_detail", 999); //
 		$this->loader->add_filter( "woocommerce_shipping_methods",				$plugin_admin, "ordv_shipper_modify_shipping_methods", 10);
 		$this->loader->add_action( "admin_enqueue_scripts",						$plugin_admin, "ordv_shipper_enqueue_styles", 10);
 		$this->loader->add_action( "admin_enqueue_scripts",						$plugin_admin, "ordv_shipper_enqueue_scripts", 10);
