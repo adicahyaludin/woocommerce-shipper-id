@@ -81,7 +81,7 @@
 			},
 			dataType: 'json',
 			beforeSend: function() {				
-				$('tr#post-'+order_id).html('<td id="loader" colspan="7" style="text-align:left; color:red;">Data is processing...</td>');
+				$('tr#post-'+order_id).block({ message: null });
 			},
 			success: function (data) {
 				if( data.order_code == 1170 || data.order_code == 1180 || data.order_code == 1190 || data.order_code == 2000 ){
@@ -98,6 +98,8 @@
 
 		e.preventDefault();
 		var order_id = $(this).attr('data_order_id');
+
+		
 		
 		$.ajax({
 			type: 'POST',
@@ -109,7 +111,7 @@
 			},
 			dataType: 'json',
 			beforeSend: function() {					
-				$('tr#post-'+order_id).html('<td id="loader" colspan="7" style="text-align:left; color:red;">Data is processing...</td>');
+				$('tr#post-'+order_id).block({ message: null });
 			},
 			success: function (data) {
 				$('tr#post-'+order_id).load(' tr#post-'+order_id+' > *' );
@@ -134,16 +136,15 @@
 			},
 			dataType: 'json',
 			beforeSend: function() {	
-				$( "#my-content-id-x" ).dialog( "close" );				
-				$('tr#post-'+order_id).html('<td id="loader" colspan="7" style="text-align:left; color:red;">Data is processing...</td>');
+				$("#my-content-id-x" ).dialog( "close" );				
+				$('tr#post-'+order_id).block({ message: null });
 			},
-			success: function (data) {
+			success: function (data) {				
 				$('tr#post-'+order_id).load(' tr#post-'+order_id+' > *' );
 			}
 		});
 	
 	});
-
 
 
 })( jQuery );

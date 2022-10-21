@@ -68,7 +68,7 @@ class Ordv_Shipper_Admin {
 		$screen = get_current_screen();
 
 		if ( $screen->base === 'term' ) :
-
+			wp_enqueue_script( $this->plugin_name.'-blockui', ORDV_SHIPPER_URI.'admin/js/jquery.blockUI.js', ['jquery'], $this->version, true );
 			wp_enqueue_script( $this->plugin_name.'-select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js', ['jquery'], $this->version, true );
 			wp_enqueue_script( $this->plugin_name, ORDV_SHIPPER_URI.'admin/js/ordv-shipper-admin.js', ['jquery',$this->plugin_name.'-select2'], $this->version, true );
 			wp_localize_script( $this->plugin_name, 'osa_vars',[
