@@ -60,13 +60,10 @@ class Ordv_Shipper_Shipping_Method extends \WC_Shipping_Method {
         endforeach;
 
         
-        $list_data_kurir = WC()->session->get( 'data_kurir');
-        
+        $list_data_kurir = WC()->session->get('data_kurir');
 
         if( NULL == $list_data_kurir ){
-
             // show nothing
-
         }else{
 
             $i = 0;

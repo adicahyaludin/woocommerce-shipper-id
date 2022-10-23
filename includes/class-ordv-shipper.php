@@ -227,8 +227,20 @@ class Ordv_Shipper {
 		$this->loader->add_filter( 'woocommerce_cart_needs_shipping',					$plugin_checkout, 'ordv_shipper_filter_cart_needs_shipping' );
 
 		$this->loader->add_action( 'wp_ajax_get_data_area', 							$plugin_checkout, 'ordv_shipper_get_data_area' );
+		$this->loader->add_action( 'wp_ajax_nopriv_get_data_area', 						$plugin_checkout, 'ordv_shipper_get_data_area' );
+
 		$this->loader->add_action( 'wp_ajax_get_data_services_first_time',				$plugin_checkout, 'ordv_shipper_get_data_services' );
+		$this->loader->add_action( 'wp_ajax_nopriv_get_data_services_first_time', 		$plugin_checkout, 'ordv_shipper_get_data_services' );
+
+		$this->loader->add_action( 'wp_ajax_get_data_no_select_value',					$plugin_checkout, 'ordv_shipper_get_data_no_select_value' );
+		$this->loader->add_action( 'wp_ajax_nopriv_get_data_no_select_value', 			$plugin_checkout, 'ordv_shipper_get_data_no_select_value' );
+		
+
 		$this->loader->add_action( 'wp_ajax_get_data_services', 						$plugin_checkout, 'ordv_shipper_get_data_services' );
+		$this->loader->add_action( 'wp_ajax_nopriv_get_data_services', 					$plugin_checkout, 'ordv_shipper_get_data_services' );
+
+		$this->loader->add_action( 'woocommerce_checkout_update_order_review',			$plugin_checkout, 'ordv_shipper_add_rates', 10, 1 );		
+
 		$this->loader->add_action( 'woocommerce_checkout_create_order', 				$plugin_checkout, 'ordv_shipper_save_order_custom_meta_data', 10, 2 );
 		$this->loader->add_action( 'woocommerce_order_details_after_order_table_items', $plugin_checkout, 'ordv_shipper_shipper_additional_detail' );
 
