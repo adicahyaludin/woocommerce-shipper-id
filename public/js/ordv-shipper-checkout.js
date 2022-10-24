@@ -6,8 +6,8 @@
 
 		$('#billing_postcode').val('');
 
-		var selected_option = $('#ordv-area option:selected').val();		
-
+		var selected_option = $('#ordv-area option:selected').val();
+		
 		if( selected_option ){
 
 			var get_text = $('#ordv-area option:selected').text();
@@ -25,6 +25,22 @@
 					'a' : a,		
 					'nonce' : checkout_ajax.get_services_first_time.nonce,
 					'action' : checkout_ajax.get_services_first_time.action
+				},
+				dataType: 'json',
+				success: function (data) {
+					$('body').trigger('update_checkout');
+				}
+			});
+
+		}else{
+
+			$.ajax({
+				type: 'POST',
+				url: checkout_ajax.ajax_url,
+				data:{
+					'a' : a,		
+					'nonce' : checkout_ajax.get_no_select_value.nonce,
+					'action' : checkout_ajax.get_no_select_value.action
 				},
 				dataType: 'json',
 				success: function (data) {

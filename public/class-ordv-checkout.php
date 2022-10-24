@@ -208,7 +208,8 @@ class Ordv_Shipper_Checkout {
 
         if ( is_checkout() ) {
 
-            WC()->session->set( 'data_kurir', null );
+            //WC()->session->set( 'data_kurir', null );
+            WC()->session->__unset( 'data_kurir');
 
             wp_enqueue_script( 'checkout-script', plugin_dir_url( __DIR__ ). 'public/js/ordv-shipper-checkout.js', array( 'jquery', 'selectWoo' ), ORDV_SHIPPER_VERSION, true );
             
@@ -222,6 +223,10 @@ class Ordv_Shipper_Checkout {
                     'action'    => 'get_data_services_first_time',
                     'nonce'     => wp_create_nonce( 'ajax-nonce' )
                 ],
+                'get_no_select_value' => [
+                    'action'    => 'get_data_no_select_value',
+                    'nonce'     => wp_create_nonce( 'ajax-nonce' )
+                ],
                 'get_services' => [
                     'action'    => 'get_data_services',
                     'nonce'     => wp_create_nonce( 'ajax-nonce' )
@@ -229,7 +234,8 @@ class Ordv_Shipper_Checkout {
             );
 
             wp_localize_script( 'checkout-script', 'checkout_ajax', $settings);
-        }        
+        }
+
     }
 
     /**
@@ -368,31 +374,6 @@ class Ordv_Shipper_Checkout {
     }
     
     /**
-     * Update order review
-     * Hooked via -
-     * @since 1.0.0
-     * @param $posted_data
-     * @return void
-     */
-    public function update_order_review( $posted_data ){
-        
-        // Parsing posted data on checkout
-        $post = array();
-        $vars = explode('&', $posted_data);
-        foreach ($vars as $k => $value){
-            $v = explode('=', urldecode($value));
-            $post[$v[0]] = $v[1];
-        }
-
-        $packages = WC()->cart->get_shipping_packages();
-        foreach ($packages as $package_key => $package) {
-            $session_key = 'shipping_for_package_'.$package_key;
-            $stored_rates = WC()->session->__unset($session_key);
-        }
-
-    }
-    
-    /**
      * Remove Shipping option data in cart page
      * Hooked via   filter woocommerce_cart_needs_shipping
      * @since       1.0.0
@@ -467,6 +448,74 @@ class Ordv_Shipper_Checkout {
 		    <?php
 
         }
+
+    }
+
+    /**
+     * Add shipping method for shipper
+     * 
+     * Hooked via   action  woocommerce_checkout_before_order_review, priority 10
+     * @since       1.0.0
+     * @param       mixed   $posted_data
+     * @return      mixed
+     */
+    public function ordv_shipper_add_rates( $posted_data ){
+        $post = array();
+        $vars = explode('&', $posted_data);
+
+        foreach ($vars as $k => $value){
+            $v = explode('=', urldecode($value));
+            $post[$v[0]] = $v[1];
+        }
+
+        $data_area =  WC()->session->get('data_area');
+
+        if( $data_area ):
+
+            $api_d_area_id  = $data_area['id'];
+            $area_id_lat    = $data_area['lat'];
+            $area_id_lng    = $data_area['lng'];
+
+            $data_packages  = ordv_shipper_fn_get_packages_data();
+            $data_list_kurir = ordv_shipper_fn_get_data_list_kurir( $api_d_area_id, $area_id_lat, $area_id_lng, $data_packages );
+
+            WC()->session->set( 'data_kurir', $data_list_kurir );
+
+        else:
+            // do nothing
+        endif;
+
+        // refresh cache data method shipping woocommerce
+        $packages = WC()->cart->get_shipping_packages();
+        foreach ($packages as $package_key => $package) {
+            $session_key = 'shipping_for_package_'.$package_key;
+            $stored_rates = WC()->session->__unset($session_key);
+        }
+
+    }
+
+    /**
+     * Remove all session data related shipper if field kelurahan not selected
+     * Hooked via   action wp_ajax_get_data_no_select_value
+     * @since       1.0.0 
+     * @return      mixed
+     */
+    public function ordv_shipper_get_data_no_select_value(){
+
+        if ( ! wp_verify_nonce( $_POST['nonce'], 'ajax-nonce' ) ) :
+            die( 'Close The Door!');
+        endif;
+
+        $list_data_kurir    = WC()->session->get('data_kurir');
+        $data_area          = WC()->session->get('data_area');
+
+        if( NULL !== $list_data_kurir ):
+            WC()->session->set( 'data_kurir', null );
+        endif;
+
+        if( NULL !== $data_area ):
+            WC()->session->set( 'data_area', null );
+        endif;
 
     }
 
