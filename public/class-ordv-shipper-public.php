@@ -70,7 +70,12 @@ class Ordv_Shipper_Public {
 
 		if( 0 !== absint($variation_id) ) :
 			$term = carbon_get_theme_option("shipper_location_term");
-			$location = wc_get_product( $variation_id )->get_attribute( "pa_" . $term );
+			//$location = wc_get_product( $variation_id )->get_attribute( "pa_" . $term );
+		
+			// get attribute slug value, instead of name
+			$location = wc_get_product( $variation_id )->get_attributes();
+			$location = $location["pa_" . $term];
+
 
 			foreach( WC()->cart->get_cart() as $cart_item ) :
 				if(
